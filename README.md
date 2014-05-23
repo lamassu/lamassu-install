@@ -11,8 +11,8 @@ Instructions
 
     ```
     curl -#o install \
-    https://raw.githubusercontent.com/lamassu/lamassu-install/master/install \
-    && bash install
+    https://raw.githubusercontent.com/lamassu/lamassu-install/master/install && \
+    bash install
     ```
 
 3. You should be set. Just follow the instructions on the screen to open your dashboard.
