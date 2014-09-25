@@ -61,7 +61,7 @@ fi
 
 debug="lamassu-debug.log"
 prefix="/usr/local"
-node="http://nodejs.org/dist/v0.10.26/node-v0.10.26-linux-x64.tar.gz"
+node="http://nodejs.org/dist/v0.10.32/node-v0.10.32-linux-x64.tar.gz"
 
 # First detect our package manager. Fail early if we don't support it.
 update=""
