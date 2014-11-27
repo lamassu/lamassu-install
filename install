@@ -111,6 +111,8 @@ prompt "Password" "" true admin_password
 echo
 echo "Updating your system (this might take a while)..."
 
+locale-gen en_US.UTF-8 >> $debug 2>&1
+
 eval $update >> $debug 2>&1
 eval $upgrade >> $debug 2>&1
 
