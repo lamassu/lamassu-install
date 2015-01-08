@@ -186,6 +186,11 @@ openssl req -new -newkey rsa:8092 -days 9999 -nodes -x509 -subj "/C=US/ST=/L=/O=
 
 chmod 600 /root/{*.key,*.crt}
 
+ORIG_PWD=$(pwd)
+cd /usr/local/lib/node_modules/lamassu-server
+/usr/local/bin/migrate
+cd $ORIG_PWD
+
 echo "Starting Lamassu services..."
 start lamassu-admin >> $debug 2>&1
 [ $? -ne 0 ] && fail "Starting lamassu-admin failed"
