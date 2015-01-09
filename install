@@ -151,7 +151,7 @@ curl "$node" | tar -C"$prefix" --strip-components=1 -zxf-
 echo "Installing Lamassu stack (this might take a while)..."
 # Install Lamassu stack
 
-npm -g install lamassu-server@two-way lamassu-admin lamassu-scripts migrate >> $debug 2>&1
+npm -g install lamassu-server@two-way lamassu-admin lamassu-scripts migrate bunyan >> $debug 2>&1
 [ $? -ne 0 ] && fail "Lamassu stack installation failed"
 
 echo "Installing Lamassu services..."
