@@ -1,0 +1,9 @@
+set -e
+
+DEBUG_LOG=lamassu-upgrade.log
+echo "Upgrading lamassu-server to two-way version, this could take a few minutes..."
+npm i -g lamassu-server@two-way >> $DEBUG_LOG 2>&1
+cd /usr/local/lib/node_modules/lamassu-server/
+migrate >> $DEBUG_LOG 2>&1
+restart lamassu-server >> $DEBUG_LOG 2>&1
+echo "Success."
