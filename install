@@ -74,7 +74,8 @@ if exists apt-get; then
   upgrade="apt-get upgrade -y"
   install="
     apt-get update -y &&
-    apt-get install -y  postgresql postgresql-contrib libpq-dev git build-essential
+    apt-get install -y  postgresql postgresql-contrib libpq-dev git build-essential python curl &&
+    /etc/init.d/postgresql start
   "
 fi
 
