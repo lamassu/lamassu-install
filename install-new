@@ -74,6 +74,8 @@ ip=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
 openssl req -new -newkey rsa:4096 -days 9999 -nodes -x509 -subj "/C=US/ST=/L=/O=/CN=$ip:8081" -keyout /root/lamassu-admin.key  -out /root/lamassu-admin.crt >> $LOG_FILE 2>&1
 openssl req -new -newkey rsa:4096 -days 9999 -nodes -x509 -subj "/C=US/ST=/L=/O=/CN=$ip:3000" -keyout /root/lamassu-server.key -out /root/lamassu-server.crt >> $LOG_FILE 2>&1
 
+pm2 startup >> $LOG_FILE 2>&1
+
 echo
 echo "Done! Now it's time to configure Lamassu stack."
 echo "Open https://$ip:8081 in your browser to access "
