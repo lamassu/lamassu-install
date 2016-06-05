@@ -61,7 +61,8 @@ mkdir -p /opt/apps/node_modules
 cd /opt/apps
 npm install lamassu-server@beta >> $LOG_FILE 2>&1
 npm install lamassu-scripts -g >> $LOG_FILE 2>&1
-npm install bunyan migrate -g >> $LOG_FILE 2>&1
+npm install bunyan migrate pm2 -g >> $LOG_FILE 2>&1
+pm2-logrotate >> $LOG_FILE 2>&1
 echo "Upgrading db schema..."
 cd node_modules/lamassu-server
 ../migrate/bin/migrate >> $LOG_FILE 2>&1
