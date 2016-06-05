@@ -12,19 +12,6 @@ function fail() {
   exit 4
 }
 
-function upstart() {
-  package="$1"
-
-  cat > "/etc/init/$package"".conf" <<EOF
-exec $package --key /root/$package\.key --cert /root/$package\.crt
-respawn
-start on startup
-env DATABASE_URL=postgres://lamassu:$password@localhost/lamassu
-env NODE_ENV=production
-chdir $(npm -g explore $package pwd)
-EOF
-}
-
 function prompt() {
   question="$1"
   default="$2"
@@ -51,7 +38,7 @@ function prompt() {
 }
 
 echo
-echo "Hello! This script will install Lamassu Remote Server."
+echo -e "Hello! This script will install \033[1mLamassu Server\033[0m."
 echo
 
 if [ "$(whoami)" != "root" ]; then
@@ -61,11 +48,6 @@ fi
 
 debug="lamassu-debug.log"
 prefix="/usr/local"
-node="http://nodejs.org/dist/v0.10.32/node-v0.10.32-linux-x64.tar.gz"
-
-# First detect our package manager. Fail early if we don't support it.
-update=""
-install=""
 
 rm -f lamassu-debug.log
 
@@ -74,7 +56,7 @@ if exists apt-get; then
   upgrade="apt-get upgrade -y"
   install="
     apt-get update -y &&
-    apt-get install -y  postgresql postgresql-contrib libpq-dev git build-essential python curl &&
+    apt-get install -y npm postgresql postgresql-contrib libpq-dev git build-essential python curl &&
     /etc/init.d/postgresql start
   "
 fi
@@ -83,21 +65,6 @@ if [ -z "$install" ]; then
   echo "Your package manager isn't supported"
   echo "This script currently supports apt-get"
   exit 1
-fi
-
-# Then detect our service management system. Also fail early if we don't
-# support it.
-# Remark: `upstart` appears to be going away from Ubuntu in lieu of `systemd`.
-service=""
-
-if exists start && [ -d "/etc/init" ]; then
-  service="upstart"
-fi
-
-if [ -z "$service" ]; then
-  echo "Your service manager isn't supported"
-  echo "This script currently supports upstart"
-  exit 2
 fi
 
 echo "We'll now ask you a couple of questions in order to configure "
@@ -143,33 +110,14 @@ EOF
 echo "{\"postgresql\":\"postgres://lamassu:$password@localhost/lamassu\"}" > /etc/lamassu.json
 
 echo "Fetching and installing node.js..."
-
-# Install node in $prefix
-curl "$node" | tar -C"$prefix" --strip-components=1 -zxf-
-
-[ $? -ne 0 ] && fail "Node.js installation failed"
+npm install -g n
+n tls
 
 echo "Installing Lamassu stack (this might take a while)..."
 # Install Lamassu stack
 
 npm -g install lamassu-server lamassu-admin lamassu-scripts migrate bunyan >> $debug 2>&1
 [ $? -ne 0 ] && fail "Lamassu stack installation failed"
-
-echo "Installing Lamassu services..."
-if [ "$service" == "upstart" ]; then
-  upstart "lamassu-server"
-  upstart "lamassu-admin"
-fi
-
-# Bootstrap lamassu database
-# We also have to use `-h 127.0.0.1` because the default type of authentication
-# for `local` connection is `peer`, which checks username of the user running
-# `psql` command.
-echo "Bootstrapping PostgreSQL..."
-SQL_FILE="$(npm -g root)/lamassu-scripts/database/lamassu.sql"
-PGPASSWORD="$password" psql -h 127.0.0.1 lamassu lamassu >> $debug 2>&1 < $SQL_FILE
-
-[ $? -ne 0 ] && fail "Bootstrapping PostgreSQL failed"
 
 echo "Creating a Lamassu user account"
 DATABASE_URL="postgres://lamassu:$password@localhost/lamassu" lamassu-useradd "$admin_username" "$admin_password"
@@ -191,13 +139,6 @@ ORIG_PWD=$(pwd)
 cd /usr/local/lib/node_modules/lamassu-server
 /usr/local/bin/migrate
 cd $ORIG_PWD
-
-echo "Starting Lamassu services..."
-start lamassu-admin >> $debug 2>&1
-[ $? -ne 0 ] && fail "Starting lamassu-admin failed"
-
-start lamassu-server >> $debug 2>&1
-[ $? -ne 0 ] && fail "Starting lamassu-server failed"
 
 echo
 echo "Done! Now it's time to configure Lamassu stack."
