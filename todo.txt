@@ -1,0 +1,3 @@
+- fix l-s to load stuff from /etc/lamassu.json
+- test install-new
+- figure out password scheme for ethereum, etc: maybe base it off seed
