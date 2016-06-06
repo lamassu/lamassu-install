@@ -1,3 +1,9 @@
-- fix l-s to load stuff from /etc/lamassu.json
 - test install-new
-- figure out password scheme for ethereum, etc: maybe base it off seed
+- don't actually start l-s at first, allow user to do it manually after set up
+- fix lamassu-admin setup
+- backup using masterSeed and google drive/dropbox/aws
+  - for now, maybe just recommend using DO backup + backup db to encrypted file
+- backup bitcoin wallet, use huge keypool to last a week
+
+
+- allow user to select whether to enable bitcoin and ethereum (separate scripts)

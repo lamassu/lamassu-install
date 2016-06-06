@@ -68,6 +68,22 @@ ADMIN_PW=$($BIN/hkdf lamassu-admin-pw $SEED)
 npm install lamassu-admin >> $LOG_FILE 2>&1
 $BIN/lamassu-useradd admin $ADMIN_PW
 
+echo "Setting up backups..."
+BACKUP_DIR=/opt/backups/postgresql
+mkdir -p $BACKUP_DIR
+chown root:postgres $BACKUP_DIR
+chmod 664 $BACKUP_DIR
+BACKUP_CRON="@daily $BIN/pg-backup > /dev/null"
+echo $BACKUP_CRON | crontab -u postgres -
+
+echo "Setting up firewall..."
+ufw allow ssh
+ufw allow 8081/tcp  # Admin
+ufw allow 3000/tcp  # Server
+ufw allow 8333/tcp  # Bitcoin
+ufw allow 30303/tcp # Ethereum
+ufw -f enable
+
 echo "Starting servers..."
 pm2 start $BIN/lamassu-server >> $LOG_FILE 2>&1
 pm2 start $BIN/lamassu-admin >> $LOG_FILE 2>&1
