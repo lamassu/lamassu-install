@@ -27,7 +27,7 @@ mkdir -p /opt/apps/seeds
 cd /opt/apps
 
 echo "Installing lamassu-server..."
-npm install lamassu-server@beta lamassu-scripts >> $LOG_FILE 2>&1
+npm install npm install lamassu/lamassu-server#two-way-db-changes lamassu-scripts >> $LOG_FILE 2>&1
 npm install bunyan pm2 -g >> $LOG_FILE 2>&1
 pm2-logrotate >> $LOG_FILE 2>&1
 BIN=$(npm bin)
@@ -78,3 +78,7 @@ echo "Default login info for lamassu-admin:"
 echo "User: admin / Password: $ADMIN_PW"
 echo
 echo "Please write this down in a safe place."
+echo -e "\n*** IMPORTANT ***"
+echo "Backup the contents of /opt/apps/seeds/seed.txt in a safe place."
+echo "This seed will allow you to retrieve system passwords, including your db password"
+echo "and they keys to your Ethereum accounts."
