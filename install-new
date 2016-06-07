@@ -2,6 +2,7 @@
 set -e
 
 LOG_FILE=/tmp/install.log
+SEEDS_DIR=/root/seeds
 
 rm -f $LOG_FILE
 
@@ -26,19 +27,16 @@ npm install -g n >> $LOG_FILE 2>&1
 echo "Upgrading nodejs..."
 n lts >> $LOG_FILE 2>&1
 
-echo "Installing postgresql..."
-mkdir -p /opt/apps/node_modules
-mkdir -p /opt/apps/seeds
-cd /opt/apps
-
 echo "Installing lamassu-server..."
-npm install npm install lamassu/lamassu-server#two-way-db-changes lamassu-scripts >> $LOG_FILE 2>&1
-npm install bunyan pm2 -g >> $LOG_FILE 2>&1
+npm install -g lamassu/lamassu-server#two-way-db-changes lamassu-scripts >> $LOG_FILE 2>&1
+npm install -g bunyan pm2 migrate >> $LOG_FILE 2>&1
 pm2 install pm2-logrotate >> $LOG_FILE 2>&1
-BIN=$(npm bin)
+BIN=$(npm -g bin)
 echo "Creating DB..."
 SEED=$(openssl rand -hex 32)
-echo $SEED > /opt/apps/seeds/seed.txt
+mkdir -p $SEEDS_DIR
+SEED_FILE=$SEEDS_DIR/seed.txt
+echo $SEED > $SEED_FILE
 
 echo "Generating SSL certificates..."
 ip=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
@@ -59,13 +57,13 @@ su - postgres >> $LOG_FILE 2>&1 <<EOF
   psql -c "CREATE ROLE lamassu WITH LOGIN SUPERUSER PASSWORD '$POSTGRES_PW';"
   createdb lamassu
 EOF
-cd node_modules/lamassu-server
-$BIN/migrate >> $LOG_FILE 2>&1
-cd ../..
+
+NPM_ROOT=$(npm -g root)
+$BIN/migrate -c $NPM_ROOT/lamassu-server >> $LOG_FILE 2>&1
 
 echo "Installing lamassu-admin..."
 ADMIN_PW=$($BIN/hkdf lamassu-admin-pw $SEED)
-npm install lamassu-admin >> $LOG_FILE 2>&1
+npm install -g lamassu-admin >> $LOG_FILE 2>&1
 $BIN/lamassu-useradd admin $ADMIN_PW
 
 echo "Setting up backups..."
@@ -82,10 +80,8 @@ ufw allow 8081/tcp >> $LOG_FILE 2>&1  # Admin
 ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
 ufw -f enable >> $LOG_FILE 2>&1
 
-echo "Starting servers..."
-pm2 start $BIN/lamassu-server >> $LOG_FILE 2>&1
-pm2 start $BIN/lamassu-admin >> $LOG_FILE 2>&1
-
+echo "Starting lamass-admin..."
+pm2 start lamassu-admin >> $LOG_FILE 2>&1
 pm2 startup >> $LOG_FILE 2>&1
 
 echo
@@ -98,7 +94,10 @@ echo "User: admin / Password: $ADMIN_PW"
 echo
 echo "Please write this down in a safe place."
 echo -e "\n*** IMPORTANT ***"
-echo "Backup the contents of /opt/apps/seeds/seed.txt in a safe place."
-echo "This seed will allow you to retrieve system passwords, including your db password"
-echo "and they keys to your Ethereum accounts."
+echo "Backup the contents of $SEED_FILE in a safe place."
+echo "This seed will allow you to retrieve system passwords, including "
+echo "the keys to your Ethereum accounts."
+echo
+echo "Once you've configured lamassu-server, start the server with:"
+echo "  pm2 start lamassu-admin"
 echo
