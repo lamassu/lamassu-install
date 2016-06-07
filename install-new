@@ -73,16 +73,14 @@ BACKUP_DIR=/opt/backups/postgresql
 mkdir -p $BACKUP_DIR
 chown root:postgres $BACKUP_DIR
 chmod 664 $BACKUP_DIR
-BACKUP_CRON="@daily $BIN/pg-backup > /dev/null"
+BACKUP_CRON="@daily $BIN/backup-pg > /dev/null"
 echo $BACKUP_CRON | crontab -u postgres -
 
 echo "Setting up firewall..."
-ufw allow ssh
-ufw allow 8081/tcp  # Admin
-ufw allow 3000/tcp  # Server
-ufw allow 8333/tcp  # Bitcoin
-ufw allow 30303/tcp # Ethereum
-ufw -f enable
+ufw allow ssh >> $LOG_FILE 2>&1
+ufw allow 8081/tcp >> $LOG_FILE 2>&1  # Admin
+ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
+ufw -f enable >> $LOG_FILE 2>&1
 
 echo "Starting servers..."
 pm2 start $BIN/lamassu-server >> $LOG_FILE 2>&1
