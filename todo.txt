@@ -1,9 +1,9 @@
-- test install-new
-- don't actually start l-s at first, allow user to do it manually after set up
 - fix lamassu-admin setup
-- backup using masterSeed and google drive/dropbox/aws
-  - for now, maybe just recommend using DO backup + backup db to encrypted file
-- backup bitcoin wallet, use huge keypool to last a week
 
+- letsencrypt, test out by installing package and trying:
+letsencrypt certonly --standalone -n --agree-tos --email <email> -d <domain>
 
-- allow user to select whether to enable bitcoin and ethereum (separate scripts)
+  - user must first point domain to this server
+  - install express renewal
+
+  curl -fsS https://raw.githubusercontent.com/lamassu/lamassu-install/nextgen/install-new | bash

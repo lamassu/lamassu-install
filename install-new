@@ -6,7 +6,7 @@ SEEDS_DIR=/root/seeds
 
 rm -f $LOG_FILE
 
-echo -e "\nStarting \033[1mlamassu-server\033[0m install. It will take a few minutes...\n"
+echo -e "\nStarting \033[1mlamassu-server\033[0m install. This will take a few minutes...\n"
 
 if [ "$(whoami)" != "root" ]; then
   echo -e "This script has to be run as \033[1mroot\033[0m user"
@@ -81,7 +81,14 @@ ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
 ufw -f enable >> $LOG_FILE 2>&1
 
 echo "Starting lamass-admin..."
-pm2 start lamassu-admin >> $LOG_FILE 2>&1
+LAMASSU_ADMIN_SCRIPT=/root/lamassu-admin.sh
+
+cat > $LAMASSU_ADMIN_SCRIPT <<EOF
+  cd $NPM_ROOT/lamassu-admin
+  lamassu-admin --key /root/lamassu-admin.key --cert /root/lamassu-admin.crt
+EOF
+chmod 755 $LAMASSU_ADMIN_SCRIPT
+pm2 start $LAMASSU_ADMIN_SCRIPT >> $LOG_FILE 2>&1
 pm2 startup >> $LOG_FILE 2>&1
 
 echo
@@ -99,5 +106,5 @@ echo "This seed will allow you to retrieve system passwords, including "
 echo "the keys to your Ethereum accounts."
 echo
 echo "Once you've configured lamassu-server, start the server with:"
-echo "  pm2 start lamassu-admin"
+echo "  pm2 start lamassu-server"
 echo
