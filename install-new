@@ -48,7 +48,8 @@ cat <<EOF > /etc/lamassu.json
 {
   "postgresql": "postgres://lamassu:$POSTGRES_PW@localhost/lamassu",
   "certPath": "/root/lamassu-server.crt",
-  "certKey": "/root/lamassu-server.key"
+  "certKey": "/root/lamassu-server.key",
+  "seedPath": "$SEED_FILE"
 }
 EOF
 
@@ -89,6 +90,8 @@ cat > $LAMASSU_ADMIN_SCRIPT <<EOF
 EOF
 chmod 755 $LAMASSU_ADMIN_SCRIPT
 pm2 start $LAMASSU_ADMIN_SCRIPT >> $LOG_FILE 2>&1
+pm2 start lamassu-server --restart-delay 10000 >> $LOG_FILE 2>&1
+pm2 save
 pm2 startup >> $LOG_FILE 2>&1
 
 echo
@@ -104,7 +107,4 @@ echo -e "\n*** IMPORTANT ***"
 echo "Backup the contents of $SEED_FILE in a safe place."
 echo "This seed will allow you to retrieve system passwords, including "
 echo "the keys to your Ethereum accounts."
-echo
-echo "Once you've configured lamassu-server, start the server with:"
-echo "  pm2 start lamassu-server"
 echo
