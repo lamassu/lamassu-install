@@ -9,7 +9,7 @@ mkdir -p $CERT_DIR >> $LOG_FILE 2>&1
 mkdir -p $CONFIG_DIR >> $LOG_FILE 2>&1
 
 export BIN=$(npm bin)
-echo "PATH=\$PATH:$BIN" >> $HOME/.profile
+echo "export PATH=\$PATH:$BIN" >> $HOME/.profile
 
 echo "Installing lamassu-server..."
 npm install bunyan pm2 migrate lamassu/lamassu-server#two-way-db-changes \

@@ -73,3 +73,7 @@ chown lamassu ./install-lamassu.sh >> $LOG_FILE 2>&1
 chmod 755 ./install-lamassu.sh >> $LOG_FILE 2>&1
 su lamassu -c ./install-lamassu.sh
 cd ~
+
+BIN=$(su lamassu -c "npm bin")
+export PATH=$PATH:$BIN
+echo "export PATH=\$PATH:$BIN" >> $HOME/.profile
