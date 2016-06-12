@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
-LOG_FILE=/tmp/install.log
-SEEDS_DIR=/root/seeds
-
+export LOG_FILE=/tmp/install.log
 rm -f $LOG_FILE
+touch $LOG_FILE
+chmod 666 $LOG_FILE
 
 echo -e "\nStarting \033[1mlamassu-server\033[0m install. This will take a few minutes...\n"
 
@@ -13,75 +13,53 @@ if [ "$(whoami)" != "root" ]; then
   exit 3
 fi
 
+cd ~
+
+export IP=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
+
 echo "Updating system..."
+curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash - >> $LOG_FILE 2>&1
 add-apt-repository -y ppa:bitcoin/bitcoin >> $LOG_FILE 2>&1
 add-apt-repository -y ppa:ethereum/ethereum >> $LOG_FILE 2>&1
 apt-get update -q >> $LOG_FILE 2>&1
 
 echo "Installing necessary packages..."
-apt-get install npm python-minimal ethereum bitcoind build-essential postgresql -y -q >> $LOG_FILE 2>&1
+apt-get install nodejs python-minimal ethereum bitcoind build-essential postgresql libpq-dev -y -q >> $LOG_FILE 2>&1
+npm install node-hkdf-sync >> $LOG_FILE 2>&1
 
-echo "Installing n..."
-npm install -g n >> $LOG_FILE 2>&1
+echo "Creating lamassu user..."
+useradd -m lamassu >> $LOG_FILE 2>&1
 
-echo "Upgrading nodejs..."
-n lts >> $LOG_FILE 2>&1
+SEEDS_DIR=~lamassu/seeds
+export SEED_FILE=$SEEDS_DIR/seed.txt
+mkdir -p $SEEDS_DIR >> $LOG_FILE 2>&1
+chown lamassu $SEEDS_DIR >> $LOG_FILE 2>&1
 
-echo "Installing lamassu-server..."
-npm install -g lamassu/lamassu-server#two-way-db-changes lamassu-scripts >> $LOG_FILE 2>&1
-npm install -g bunyan pm2 migrate >> $LOG_FILE 2>&1
-pm2 install pm2-logrotate >> $LOG_FILE 2>&1
-BIN=$(npm -g bin)
-echo "Creating DB..."
-SEED=$(openssl rand -hex 32)
-mkdir -p $SEEDS_DIR
-SEED_FILE=$SEEDS_DIR/seed.txt
+echo "Generating seed..."
+export SEED=$(openssl rand -hex 32)
 echo $SEED > $SEED_FILE
 
-echo "Generating SSL certificates..."
-ip=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
-openssl req -new -newkey rsa:4096 -days 9999 -nodes -x509 -subj "/C=US/ST=/L=/O=/CN=$ip:8081" -keyout /root/lamassu-admin.key  -out /root/lamassu-admin.crt >> $LOG_FILE 2>&1
-openssl req -new -newkey rsa:4096 -days 9999 -nodes -x509 -subj "/C=US/ST=/L=/O=/CN=$ip:3000" -keyout /root/lamassu-server.key -out /root/lamassu-server.crt >> $LOG_FILE 2>&1
+SALT="lamassu-server-salt"
+HKDF_SCRIPT="const HKDF = require('node-hkdf-sync'); \
+const seed = new Buffer('$SEED', 'hex'); \
+const hkdf = new HKDF('sha256', '$SALT', seed); \
+console.log(hkdf.derive('postgres-pw', 32).toString('hex'))"
 
-POSTGRES_PW=$($BIN/hkdf postgres-pw $SEED)
+export POSTGRES_PW=$(node -e "$HKDF_SCRIPT")
 
-cat <<EOF > /etc/lamassu.json
-{
-  "postgresql": "postgres://lamassu:$POSTGRES_PW@localhost/lamassu",
-  "certPath": "/root/lamassu-server.crt",
-  "certKeyPath": "/root/lamassu-server.key",
-  "seedPath": "$SEED_FILE"
-}
-EOF
-
-cat <<EOF > /etc/lamassu-admin.json
-{
-  "certPath": "/root/lamassu-admin.crt",
-  "certKeyPath": "/root/lamassu-admin.key"
-}
-EOF
-
-echo "Upgrading db schema..."
-su - postgres >> $LOG_FILE 2>&1 <<EOF
-  psql -c "CREATE ROLE lamassu WITH LOGIN SUPERUSER PASSWORD '$POSTGRES_PW';"
+echo "Creating postgres user..."
+su -l postgres >> $LOG_FILE 2>&1 <<EOF
+  psql -c "CREATE ROLE lamassu_pg WITH LOGIN SUPERUSER PASSWORD '$POSTGRES_PW';"
   createdb lamassu
 EOF
-
-NPM_ROOT=$(npm -g root)
-$BIN/migrate -c $NPM_ROOT/lamassu-server >> $LOG_FILE 2>&1
-
-echo "Installing lamassu-admin..."
-ADMIN_PW=$($BIN/hkdf lamassu-admin-pw $SEED)
-npm install -g lamassu/lamassu-admin >> $LOG_FILE 2>&1
-$BIN/lamassu-useradd admin $ADMIN_PW
 
 echo "Setting up backups..."
 BACKUP_DIR=/opt/backups/postgresql
 mkdir -p $BACKUP_DIR
-chown root:postgres $BACKUP_DIR
-chmod 664 $BACKUP_DIR
+chown root:postgres $BACKUP_DIR >> $LOG_FILE 2>&1
+chmod 664 $BACKUP_DIR >> $LOG_FILE 2>&1
 BACKUP_CRON="@daily $BIN/backup-pg > /dev/null"
-echo $BACKUP_CRON | crontab -u postgres -
+echo $BACKUP_CRON | crontab -u postgres - >> $LOG_FILE 2>&1
 
 echo "Setting up firewall..."
 ufw allow ssh >> $LOG_FILE 2>&1
@@ -89,25 +67,9 @@ ufw allow 8081/tcp >> $LOG_FILE 2>&1  # Admin
 ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
 ufw -f enable >> $LOG_FILE 2>&1
 
-echo "Starting lamass-admin..."
-LAMASSU_ADMIN_SCRIPT=/root/lamassu-admin.sh
-
-pm2 start lamassu-admin --env '{"NODE_ENV": "production"}' >> $LOG_FILE 2>&1
-pm2 start lamassu-server --env '{"NODE_ENV": "production"}' --restart-delay 10000 >> $LOG_FILE 2>&1
-pm2 save
-pm2 startup >> $LOG_FILE 2>&1
-
-echo
-echo "Done! Now it's time to configure Lamassu stack."
-echo "Open https://$ip:8081 in your browser to access "
-echo "your admin panel."
-echo
-echo "Default login info for lamassu-admin:"
-echo "User: admin / Password: $ADMIN_PW"
-echo
-echo "Please write this down in a safe place."
-echo -e "\n*** IMPORTANT ***"
-echo "Backup the contents of $SEED_FILE in a safe place."
-echo "This seed will allow you to retrieve system passwords, including "
-echo "the keys to your Ethereum accounts."
-echo
+cd ~lamassu
+cp /vagrant/install-lamassu.sh .  # FIX to download
+chown lamassu ./install-lamassu.sh >> $LOG_FILE 2>&1
+chmod 755 ./install-lamassu.sh >> $LOG_FILE 2>&1
+su lamassu -c ./install-lamassu.sh
+cd ~

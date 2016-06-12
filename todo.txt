@@ -1,9 +1,2 @@
-- fix lamassu-admin setup
-
-- letsencrypt, test out by installing package and trying:
-letsencrypt certonly --standalone -n --agree-tos --email <email> -d <domain>
-
-  - user must first point domain to this server
-  - install express renewal
-
-  curl -fsS https://raw.githubusercontent.com/lamassu/lamassu-install/nextgen/install-new | bash
+- download/copy install-lamassu.sh to lamassu home dir
+You need to install postgresql-server-dev-X.Y for building a server-side extension or libpq-dev for building a client-side application.
