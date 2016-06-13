@@ -91,7 +91,6 @@ chown root:postgres $BACKUP_DIR >> $LOG_FILE 2>&1
 chmod 664 $BACKUP_DIR >> $LOG_FILE 2>&1
 BACKUP_CRON="@daily $BIN/backup-pg > /dev/null"
 echo $BACKUP_CRON | crontab -u postgres - >> $LOG_FILE 2>&1
-hkdf postgres-pw $SEED
 backup-pg >> $LOG_FILE 2>&1
 
 echo "Setting up firewall..."
