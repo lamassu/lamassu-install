@@ -68,12 +68,14 @@ ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
 ufw -f enable >> $LOG_FILE 2>&1
 
 cd ~lamassu
-cp /vagrant/install-lamassu.sh .  # FIX to download
+cp ~/install-lamassu.sh .  # FIX to download
 chown lamassu ./install-lamassu.sh >> $LOG_FILE 2>&1
 chmod 755 ./install-lamassu.sh >> $LOG_FILE 2>&1
-su lamassu -c ./install-lamassu.sh
+su lamassu ./install-lamassu.sh
 cd ~
 
 BIN=$(su lamassu -c "npm bin")
 export PATH=$PATH:$BIN
-echo "export PATH=\$PATH:$BIN" >> $HOME/.profile
+echo "export PATH=\$PATH:$BIN" >> $HOME/.bashrc
+
+env PATH=$PATH $BIN/pm2 startup linux -u lamassu --hp /home/lamassu

@@ -9,7 +9,7 @@ mkdir -p $CERT_DIR >> $LOG_FILE 2>&1
 mkdir -p $CONFIG_DIR >> $LOG_FILE 2>&1
 
 export BIN=$(npm bin)
-echo "export PATH=\$PATH:$BIN" >> $HOME/.profile
+echo "export PATH=\$PATH:$BIN" >> $HOME/.bashrc
 
 echo "Installing lamassu-server..."
 npm install bunyan pm2 migrate lamassu/lamassu-server#two-way-db-changes \
@@ -47,7 +47,6 @@ echo "Starting lamassu-admin..."
 $BIN/pm2 start $BIN/lamassu-admin --env '{"NODE_ENV": "production"}' >> $LOG_FILE 2>&1
 $BIN/pm2 start $BIN/lamassu-server --env '{"NODE_ENV": "production", "LAMASSU_ENV": "debug"}' --restart-delay 10000 >> $LOG_FILE 2>&1
 $BIN/pm2 save >> $LOG_FILE 2>&1
-$BIN/pm2 startup >> $LOG_FILE 2>&1
 
 echo
 echo "Done! Now it's time to configure Lamassu stack."
