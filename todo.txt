@@ -1,8 +1,6 @@
-- download/copy install-lamassu.sh to lamassu home dir
-You need to install postgresql-server-dev-X.Y for building a server-side extension or libpq-dev for building a client-side application.
-
 - test backup scripts
-- easy way to run ssu-geth and ssu-bitcoind from root (probably add the path to root)
 
-- geth log shows as error log, make pm2 display it as regular log
-- run l-s in debug mode (use lamassu.json)
+v geth log shows as error log, make pm2 display it as regular log
+v run l-s in debug mode (use lamassu.json)
+
+- retest everything
