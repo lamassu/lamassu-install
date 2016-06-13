@@ -21,7 +21,6 @@ apt-get update -q >> $LOG_FILE 2>&1
 
 echo "Installing necessary packages..."
 apt-get install nodejs python-minimal ethereum bitcoind build-essential postgresql libpq-dev -y -q >> $LOG_FILE 2>&1
-npm install node-hkdf-sync >> $LOG_FILE 2>&1
 
 echo "Generating seed..."
 SEEDS_DIR=$HOME/seeds
@@ -30,15 +29,15 @@ mkdir -p $SEEDS_DIR >> $LOG_FILE 2>&1
 SEED=$(openssl rand -hex 32)
 echo $SEED > $SEED_FILE
 
-SALT="lamassu-server-salt"
-HKDF_SCRIPT="const HKDF = require('node-hkdf-sync'); \
-const seed = new Buffer('$SEED', 'hex'); \
-const hkdf = new HKDF('sha256', '$SALT', seed); \
-console.log(hkdf.derive('postgres-pw', 32).toString('hex'))"
-
-export POSTGRES_PW=$(node -e "$HKDF_SCRIPT")
+echo "Installing lamassu-server..."
+# NOTE: --unsafe-perm sounds scary but the idea of the DO box is for everything to
+# run under root, since the box only does one thing. Under those assumptions,
+# --unsafe-perm doesn't do anything bad.
+npm install -g --unsafe-perm bunyan pm2 migrate lamassu/lamassu-server#two-way-db-changes \
+  lamassu/lamassu-admin lamassu/lamassu-scripts >> $LOG_FILE 2>&1
 
 echo "Creating postgres user..."
+POSTGRES_PW=$(hkdf postgres-pw $SEED)
 su -l postgres >> $LOG_FILE 2>&1 <<EOF
   psql -c "CREATE ROLE lamassu_pg WITH LOGIN SUPERUSER PASSWORD '$POSTGRES_PW';"
   createdb lamassu
@@ -49,13 +48,6 @@ CONFIG_DIR=$HOME/.lamassu
 
 mkdir -p $CERT_DIR >> $LOG_FILE 2>&1
 mkdir -p $CONFIG_DIR >> $LOG_FILE 2>&1
-
-echo "Installing lamassu-server..."
-# NOTE: --unsafe-perm sounds scary but the idea of the DO box is for everything to
-# run under root, since the box only does one thing. Under those assumptions,
-# --unsafe-perm doesn't do anything bad.
-npm install -g --unsafe-perm bunyan pm2 migrate lamassu/lamassu-server#two-way-db-changes \
-  lamassu/lamassu-admin lamassu/lamassu-scripts >> $LOG_FILE 2>&1
 
 echo "Generating SSL certificates..."
 openssl req -new -newkey rsa:4096 -days 9999 -nodes -x509 -subj "/C=US/ST=/L=/O=/CN=$IP:8081" -keyout $CERT_DIR/lamassu-admin.key  -out $CERT_DIR/lamassu-admin.crt >> $LOG_FILE 2>&1
@@ -99,6 +91,8 @@ chown root:postgres $BACKUP_DIR >> $LOG_FILE 2>&1
 chmod 664 $BACKUP_DIR >> $LOG_FILE 2>&1
 BACKUP_CRON="@daily $BIN/backup-pg > /dev/null"
 echo $BACKUP_CRON | crontab -u postgres - >> $LOG_FILE 2>&1
+hkdf postgres-pw $SEED
+backup-pg >> $LOG_FILE 2>&1
 
 echo "Setting up firewall..."
 ufw allow ssh >> $LOG_FILE 2>&1

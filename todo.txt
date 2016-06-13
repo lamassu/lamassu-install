@@ -3,4 +3,7 @@
 v geth log shows as error log, make pm2 display it as regular log
 v run l-s in debug mode (use lamassu.json)
 
+v why is hkdf in ubuntu?
+
+v do immediate postgres backup
 - retest everything
