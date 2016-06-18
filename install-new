@@ -17,10 +17,10 @@ echo "Updating system..."
 curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash - >> $LOG_FILE 2>&1
 add-apt-repository -y ppa:bitcoin/bitcoin >> $LOG_FILE 2>&1
 add-apt-repository -y ppa:ethereum/ethereum >> $LOG_FILE 2>&1
-apt-get update -q >> $LOG_FILE 2>&1
+apt update >> $LOG_FILE 2>&1
 
 echo "Installing necessary packages..."
-apt-get install nodejs python-minimal ethereum bitcoind build-essential postgresql libpq-dev -y -q >> $LOG_FILE 2>&1
+apt install nodejs python-minimal ethereum bitcoind build-essential postgresql libpq-dev -y -q >> $LOG_FILE 2>&1
 
 echo "Generating seed..."
 SEEDS_DIR=$HOME/seeds

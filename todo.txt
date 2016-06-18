@@ -1,11 +1,11 @@
 - test backup scripts
 
 vv geth log shows as error log, make pm2 display it as regular log
-v- run l-s in debug mode (use lamassu.json)
+vv run l-s in debug mode (use lamassu.json)
 
 vv why is hkdf in ubuntu?
 
-v- do immediate postgres backup
-v- fix backup script
+vv do immediate postgres backup
+vv fix backup script
 
 - retest everything
