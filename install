@@ -1,146 +1,115 @@
 #!/usr/bin/env bash
 set -e
 
-function exists() {
-  which $1 > /dev/null 2>&1
-}
+export LOG_FILE=/tmp/install.log
+rm -f $LOG_FILE
 
-function fail() {
-  echo $1
-  echo "Please contact Lamassu support (support@lamassu.is), including "
-  echo "command output and lamassu-debug.log file"
-  exit 4
-}
-
-function prompt() {
-  question="$1"
-  default="$2"
-  silent="$3"
-  var="$4"
-
-  echo -n "$question: "
-  if [ ! -z "$default" ]; then
-    echo -n "($default) "
-  fi
-
-  if [ "$silent" = true ]; then
-    read -s result
-    echo
-  else
-    read result
-  fi
-
-  if [ -z "$result" ]; then
-    export "$var=$default"
-  else
-    export "$var=$result"
-  fi
-}
-
-echo
-echo -e "Hello! This script will install \033[1mLamassu Server\033[0m."
-echo
+echo -e "\nStarting \033[1mlamassu-server\033[0m install. This will take a few minutes...\n"
 
 if [ "$(whoami)" != "root" ]; then
-  echo "This script has to be run as \`root\`"
+  echo -e "This script has to be run as \033[1mroot\033[0m user"
   exit 3
 fi
 
-debug="lamassu-debug.log"
-prefix="/usr/local"
+export IP=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
 
-rm -f lamassu-debug.log
+echo "Updating system..."
+curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash - >> $LOG_FILE 2>&1
+add-apt-repository -y ppa:bitcoin/bitcoin >> $LOG_FILE 2>&1
+add-apt-repository -y ppa:ethereum/ethereum >> $LOG_FILE 2>&1
+apt update >> $LOG_FILE 2>&1
 
-if exists apt-get; then
-  update="apt-get update -y"
-  upgrade="apt-get upgrade -y"
-  install="
-    apt-get update -y &&
-    apt-get install -y npm postgresql postgresql-contrib libpq-dev git build-essential python curl &&
-    /etc/init.d/postgresql start
-  "
-fi
+echo "Installing necessary packages..."
+apt install nodejs python-minimal ethereum bitcoind build-essential postgresql libpq-dev -y -q >> $LOG_FILE 2>&1
 
-if [ -z "$install" ]; then
-  echo "Your package manager isn't supported"
-  echo "This script currently supports apt-get"
-  exit 1
-fi
+echo "Generating seed..."
+SEEDS_DIR=$HOME/seeds
+SEED_FILE=$SEEDS_DIR/seed.txt
+mkdir -p $SEEDS_DIR >> $LOG_FILE 2>&1
+SEED=$(openssl rand -hex 32)
+echo $SEED > $SEED_FILE
 
-echo "We'll now ask you a couple of questions in order to configure "
-echo "this installation."
-echo
+echo "Installing lamassu-server..."
+# NOTE: --unsafe-perm sounds scary but the idea of the DO box is for everything to
+# run under root, since the box only does one thing. Under those assumptions,
+# --unsafe-perm doesn't do anything bad.
+npm install -g --unsafe-perm bunyan pm2 migrate lamassu/lamassu-server#alpha \
+  lamassu/lamassu-admin lamassu/lamassu-scripts >> $LOG_FILE 2>&1
 
-echo "Pick your admin panel credentials:"
-prompt "Username" "admin" false admin_username
-prompt "Password" "" true admin_password
-
-
-echo
-echo "Updating your system (this might take a while)..."
-
-locale-gen en_US.UTF-8 >> $debug 2>&1
-export LANGUAGE="en_US.UTF-8"
-export LC_ALL="en_US.UTF-8"
-echo 'LANGUAGE="en_US.UTF-8"' >> /etc/default/locale
-echo 'LC_ALL="en_US.UTF-8"' >> /etc/default/locale
-
-eval $update >> $debug 2>&1
-eval $upgrade >> $debug 2>&1
-
-[ $? -ne 0 ] && fail "Updating your system failed"
-
-# Install PostgreSQL with the package manager we found.
-echo
-echo "Installing PostgreSQL (this might take a while)..."
-eval $install >> $debug 2>&1
-
-[ $? -ne 0 ] && fail "PostgreSQL installation failed"
-
-# Set up users and databases in Postgres.
-# Remark: do we want lamassu to be a super user?
-password=$(openssl rand -hex 32)
-su - postgres >> $debug 2>&1 <<EOF
-  dropdb lamassu
-  dropuser lamassu
-  psql -c "CREATE ROLE lamassu WITH LOGIN SUPERUSER PASSWORD '$password';"
-  createdb -O lamassu lamassu
+echo "Creating postgres user..."
+POSTGRES_PW=$(hkdf postgres-pw $SEED)
+su -l postgres >> $LOG_FILE 2>&1 <<EOF
+  psql -c "CREATE ROLE lamassu_pg WITH LOGIN SUPERUSER PASSWORD '$POSTGRES_PW';"
+  createdb lamassu
 EOF
 
-echo "{\"postgresql\":\"postgres://lamassu:$password@localhost/lamassu\"}" > /etc/lamassu.json
+CERT_DIR=$HOME/certs
+CONFIG_DIR=$HOME/.lamassu
 
-echo "Fetching and installing node.js..."
-npm install -g n
-n tls
+mkdir -p $CERT_DIR >> $LOG_FILE 2>&1
+mkdir -p $CONFIG_DIR >> $LOG_FILE 2>&1
 
-echo "Installing Lamassu stack (this might take a while)..."
-# Install Lamassu stack
-
-npm -g install lamassu-server lamassu-admin lamassu-scripts migrate bunyan >> $debug 2>&1
-[ $? -ne 0 ] && fail "Lamassu stack installation failed"
-
-echo "Creating a Lamassu user account"
-DATABASE_URL="postgres://lamassu:$password@localhost/lamassu" lamassu-useradd "$admin_username" "$admin_password"
-[ $? -ne 0 ] && fail "Adding a user failed"
-
-ip=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
-
-# Generate SSL certificates for lamassu-server and lamassu-admin.
 echo "Generating SSL certificates..."
-openssl req -new -newkey rsa:8092 -days 9999 -nodes -x509 -subj "/C=US/ST=/L=/O=/CN=$ip:8081" -keyout /root/lamassu-admin.key  -out /root/lamassu-admin.crt >> $debug 2>&1
-[ $? -ne 0 ] && fail "Generating a certificate for lamassu-admin failed"
+openssl req -new -newkey rsa:4096 -days 9999 -nodes -x509 -subj "/C=US/ST=/L=/O=/CN=$IP:8081" -keyout $CERT_DIR/lamassu-admin.key  -out $CERT_DIR/lamassu-admin.crt >> $LOG_FILE 2>&1
+openssl req -new -newkey rsa:4096 -days 9999 -nodes -x509 -subj "/C=US/ST=/L=/O=/CN=$IP:3000" -keyout $CERT_DIR/lamassu-server.key -out $CERT_DIR/lamassu-server.crt >> $LOG_FILE 2>&1
 
-openssl req -new -newkey rsa:8092 -days 9999 -nodes -x509 -subj "/C=US/ST=/L=/O=/CN=$ip:3000" -keyout /root/lamassu-server.key -out /root/lamassu-server.crt >> $debug 2>&1
-[ $? -ne 0 ] && fail "Generating a certificate for lamassu-server failed"
+cat <<EOF > $CONFIG_DIR/lamassu.json
+{
+  "postgresql": "postgres://lamassu_pg:$POSTGRES_PW@localhost/lamassu",
+  "certPath": "$CERT_DIR/lamassu-server.crt",
+  "certKeyPath": "$CERT_DIR/lamassu-server.key",
+  "seedPath": "$SEED_FILE",
+  "logLevel": "debug"
+}
+EOF
 
-chmod 600 /root/{*.key,*.crt}
+cat <<EOF > $CONFIG_DIR/lamassu-admin.json
+{
+  "certPath": "$CERT_DIR/lamassu-admin.crt",
+  "certKeyPath": "$CERT_DIR/lamassu-admin.key"
+}
+EOF
 
-ORIG_PWD=$(pwd)
-cd /usr/local/lib/node_modules/lamassu-server
-/usr/local/bin/migrate
-cd $ORIG_PWD
+NPM_ROOT=$(npm -g root)
+migrate -c $NPM_ROOT/lamassu-server >> $LOG_FILE 2>&1
+
+echo "Installing lamassu-admin..."
+ADMIN_PW=$(hkdf lamassu-admin-pw $SEED)
+lamassu-useradd admin $ADMIN_PW >> $LOG_FILE 2>&1
+
+echo "Starting lamassu-admin..."
+pm2 start lamassu-admin --env '{"NODE_ENV": "production"}' >> $LOG_FILE 2>&1
+pm2 start lamassu-server --env '{"NODE_ENV": "production"}' --restart-delay 10000 >> $LOG_FILE 2>&1
+pm2 save >> $LOG_FILE 2>&1
+pm2 startup >> $LOG_FILE 2>&1
+
+echo "Setting up backups..."
+BIN=$(npm -g bin)
+BACKUP_DIR=$HOME/backups/postgresql
+mkdir -p $BACKUP_DIR
+chown root:postgres $BACKUP_DIR >> $LOG_FILE 2>&1
+chmod 664 $BACKUP_DIR >> $LOG_FILE 2>&1
+BACKUP_CRON="@daily $BIN/backup-pg > /dev/null"
+echo $BACKUP_CRON | crontab -u postgres - >> $LOG_FILE 2>&1
+backup-pg >> $LOG_FILE 2>&1
+
+echo "Setting up firewall..."
+ufw allow ssh >> $LOG_FILE 2>&1
+ufw allow 8081/tcp >> $LOG_FILE 2>&1  # Admin
+ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
+ufw -f enable >> $LOG_FILE 2>&1
 
 echo
 echo "Done! Now it's time to configure Lamassu stack."
-echo "Open https://$ip:8081 in your browser to access "
+echo "Open https://$IP:8081 in your browser to access "
 echo "your admin panel."
+echo
+echo "Default login info for lamassu-admin:"
+echo "User: admin / Password: $ADMIN_PW"
+echo
+echo "Please write this down in a safe place."
+echo -e "\n*** IMPORTANT ***"
+echo "Backup the contents of $SEED_FILE in a safe place."
+echo "This seed will allow you to retrieve system passwords, including "
+echo "the keys to your Ethereum accounts."
+echo
