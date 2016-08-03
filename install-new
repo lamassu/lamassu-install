@@ -33,7 +33,7 @@ echo "Installing lamassu-server..."
 # NOTE: --unsafe-perm sounds scary but the idea of the DO box is for everything to
 # run under root, since the box only does one thing. Under those assumptions,
 # --unsafe-perm doesn't do anything bad.
-npm install -g --unsafe-perm bunyan pm2 migrate lamassu/lamassu-server#two-way-db-changes \
+npm install -g --unsafe-perm bunyan pm2 migrate lamassu/lamassu-server#alpha \
   lamassu/lamassu-admin lamassu/lamassu-scripts >> $LOG_FILE 2>&1
 
 echo "Creating postgres user..."
