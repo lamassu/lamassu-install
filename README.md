@@ -10,9 +10,7 @@ Instructions
 2. ssh into the droplet and paste the following command:
 
     ```
-    curl -#o install \
-    https://raw.githubusercontent.com/lamassu/lamassu-install/master/install && \
-    bash install
+    curl -# https://raw.githubusercontent.com/lamassu/lamassu-install/alpha/install | bash    
     ```
 
 3. You should be set. Just follow the instructions on the screen to open your dashboard.
