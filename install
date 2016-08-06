@@ -34,7 +34,7 @@ echo "Installing lamassu-server..."
 # run under root, since the box only does one thing. Under those assumptions,
 # --unsafe-perm doesn't do anything bad.
 npm install -g --unsafe-perm bunyan pm2 migrate lamassu/lamassu-server#alpha \
-  lamassu/lamassu-admin lamassu/lamassu-scripts >> $LOG_FILE 2>&1
+  lamassu/lamassu-admin#alpha lamassu/lamassu-scripts >> $LOG_FILE 2>&1
 
 echo "Creating postgres user..."
 POSTGRES_PW=$(hkdf postgres-pw $SEED)
