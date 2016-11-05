@@ -11,10 +11,11 @@ if [ "$(whoami)" != "root" ]; then
   exit 3
 fi
 
-export IP=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
+IP=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
+DOMAIN=$IP
 
 echo "Updating system..."
-curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash - >> $LOG_FILE 2>&1
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - >> $LOG_FILE 2>&1
 add-apt-repository -y ppa:bitcoin/bitcoin >> $LOG_FILE 2>&1
 add-apt-repository -y ppa:ethereum/ethereum >> $LOG_FILE 2>&1
 apt update >> $LOG_FILE 2>&1
@@ -29,12 +30,13 @@ mkdir -p $SEEDS_DIR >> $LOG_FILE 2>&1
 SEED=$(openssl rand -hex 32)
 echo $SEED > $SEED_FILE
 
+echo "Installing yarn package manager for node..."
+npm -g --unsafe-perm install yarn
+
 echo "Installing lamassu-server..."
-# NOTE: --unsafe-perm sounds scary but the idea of the DO box is for everything to
-# run under root, since the box only does one thing. Under those assumptions,
-# --unsafe-perm doesn't do anything bad.
-npm install -g --unsafe-perm bunyan pm2 migrate lamassu/lamassu-server#alpha \
-  lamassu/lamassu-admin#alpha lamassu/lamassu-scripts#alpha >> $LOG_FILE 2>&1
+yarn global add bunyan pm2 lamassu/lamassu-server#alpha \
+  lamassu/lamassu-scripts#alpha \
+  lamassu/lamassu-admin-server >> $LOG_FILE 2>&1
 
 echo "Creating postgres user..."
 POSTGRES_PW=$(hkdf postgres-pw $SEED)
@@ -43,6 +45,7 @@ su -l postgres >> $LOG_FILE 2>&1 <<EOF
   createdb lamassu
 EOF
 
+
 CERT_DIR=$HOME/certs
 CONFIG_DIR=$HOME/.lamassu
 
@@ -50,35 +53,54 @@ mkdir -p $CERT_DIR >> $LOG_FILE 2>&1
 mkdir -p $CONFIG_DIR >> $LOG_FILE 2>&1
 
 echo "Generating SSL certificates..."
-openssl req -new -newkey rsa:4096 -days 9999 -nodes -x509 -subj "/C=US/ST=/L=/O=/CN=$IP:8081" -keyout $CERT_DIR/lamassu-admin.key  -out $CERT_DIR/lamassu-admin.crt >> $LOG_FILE 2>&1
-openssl req -new -newkey rsa:4096 -days 9999 -nodes -x509 -subj "/C=US/ST=/L=/O=/CN=$IP:3000" -keyout $CERT_DIR/lamassu-server.key -out $CERT_DIR/lamassu-server.crt >> $LOG_FILE 2>&1
+
+openssl genrsa \
+  -out $CERT_DIR/root-ca.key.pem \
+  4096
+
+openssl req \
+  -x509 \
+  -new \
+  -nodes \
+  -key $CERT_DIR/root-ca.key.pem \
+  -days 3560 \
+  -out $CERT_DIR/root-ca.crt.pem \
+  -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator CA/CN=lamassu-operator.is"
+
+openssl genrsa \
+  -out $CERT_DIR/server.key.pem \
+  4096
+
+openssl req -new \
+  -key $CERT_DIR/server.key.pem \
+  -out $CERT_DIR/server.csr.pem \
+  -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator/CN=$DOMAIN"
+
+# Sign the request from Device with your Root CA
+openssl x509 \
+  -req -in $CERT_DIR/server.csr.pem \
+  -CA $CERT_DIR/root-ca.crt.pem \
+  -CAkey $CERT_DIR/root-ca.key.pem \
+  -CAcreateserial \
+  -out $CERT_DIR/server.crt.pem \
+  -days 3650
 
 cat <<EOF > $CONFIG_DIR/lamassu.json
 {
   "postgresql": "postgres://lamassu_pg:$POSTGRES_PW@localhost/lamassu",
-  "certPath": "$CERT_DIR/lamassu-server.crt",
-  "certKeyPath": "$CERT_DIR/lamassu-server.key",
   "seedPath": "$SEED_FILE",
   "logLevel": "debug"
 }
 EOF
 
-cat <<EOF > $CONFIG_DIR/lamassu-admin.json
-{
-  "certPath": "$CERT_DIR/lamassu-admin.crt",
-  "certKeyPath": "$CERT_DIR/lamassu-admin.key"
-}
-EOF
-
-NPM_ROOT=$(npm -g root)
-migrate -c $NPM_ROOT/lamassu-server >> $LOG_FILE 2>&1
+lamassu-migrate >> $LOG_FILE 2>&1
 
 echo "Installing lamassu-admin..."
-ADMIN_PW=$(hkdf lamassu-admin-pw $SEED)
-lamassu-useradd admin $ADMIN_PW >> $LOG_FILE 2>&1
+lamassu-domain $DOMAIN >> $LOG_FILE 2>&1
+ADMIN_REGISTRATION_URL=`lamassu-register admin 2>> $LOG_FILE`
 
 echo "Starting lamassu-admin..."
-pm2 start lamassu-admin --env '{"NODE_ENV": "production"}' >> $LOG_FILE 2>&1
+pm2 start lamassu-admin-server --env '{"NODE_ENV": "production"}' >> $LOG_FILE 2>&1
 pm2 start lamassu-server --env '{"NODE_ENV": "production"}' --restart-delay 10000 >> $LOG_FILE 2>&1
 pm2 save >> $LOG_FILE 2>&1
 pm2 startup >> $LOG_FILE 2>&1
@@ -95,17 +117,15 @@ backup-pg >> $LOG_FILE 2>&1
 
 echo "Setting up firewall..."
 ufw allow ssh >> $LOG_FILE 2>&1
-ufw allow 8081/tcp >> $LOG_FILE 2>&1  # Admin
+ufw allow 443/tcp >> $LOG_FILE 2>&1  # Admin
 ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
 ufw -f enable >> $LOG_FILE 2>&1
 
 echo
 echo "Done! Now it's time to configure Lamassu stack."
-echo "Open https://$IP:8081 in your browser to access "
-echo "your admin panel."
 echo
-echo "Default login info for lamassu-admin:"
-echo "User: admin / Password: $ADMIN_PW"
+echo "Activation URL for lamassu-admin:"
+echo $ADMIN_REGISTRATION_URL
 echo
 echo "Please write this down in a safe place."
 echo -e "\n*** IMPORTANT ***"

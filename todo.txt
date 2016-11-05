@@ -1,11 +1,30 @@
 - test backup scripts
-
-vv geth log shows as error log, make pm2 display it as regular log
-vv run l-s in debug mode (use lamassu.json)
-
-vv why is hkdf in ubuntu?
-
-vv do immediate postgres backup
-vv fix backup script
-
 - retest everything
+
+---------------------------------
+
+- lamassu-admin-server
+- correctly set up certificates
+- set up static server for lamassu-admin
+- use yarn
+
+
+---------------------------------
+
+certificates:
+
+- all certs live in lamassu-server/certs
+  - root-ca.key.pem
+  - root-ca.crt.pem
+  - server.key.pem
+  - server.crt.pem
+- lamassu-server uses hard-coded values
+- lamassu-server and lamassu-admin-server use same certificate?
+  - for now, yes
+
+v lamassu-migrate
+v lamassu-register
+- lamassu-admin-server contains elm build
+  v consolidate lamassu-admin-server with lamassu-admin-elm?
+  v for now we just build to lamassu-admin-server
+
