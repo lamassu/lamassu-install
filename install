@@ -31,12 +31,12 @@ SEED=$(openssl rand -hex 32)
 echo $SEED > $SEED_FILE
 
 echo "Installing yarn package manager for node..."
-npm -g --unsafe-perm install yarn
+npm -g --verbose --unsafe-perm install yarn  >> $LOG_FILE 2>&1
 
 echo "Installing lamassu-server..."
-yarn global add bunyan pm2 lamassu/lamassu-server#alpha \
-  lamassu/lamassu-scripts#alpha \
-  lamassu/lamassu-admin-server >> $LOG_FILE 2>&1
+yarn global add pm2 https://github.com/lamassu/lamassu-server/tarball/winston \
+  https://github.com/lamassu/lamassu-scripts/tarball/alpha \
+  https://github.com/lamassu/lamassu-admin-server/tarball/master >> $LOG_FILE 2>&1
 
 echo "Creating postgres user..."
 POSTGRES_PW=$(hkdf postgres-pw $SEED)
@@ -46,53 +46,67 @@ su -l postgres >> $LOG_FILE 2>&1 <<EOF
 EOF
 
 
-CERT_DIR=$HOME/certs
-CONFIG_DIR=$HOME/.lamassu
+CERT_DIR=/etc/ssl/certs
+KEY_DIR=/etc/ssl/private
+
+CONFIG_DIR=/etc/lamassu
 
 mkdir -p $CERT_DIR >> $LOG_FILE 2>&1
 mkdir -p $CONFIG_DIR >> $LOG_FILE 2>&1
 
 echo "Generating SSL certificates..."
 
+CA_KEY_PATH=$KEY_DIR/Lamassu_OP_Root_CA.key
+CA_PATH=$CERT_DIR/Lamassu_OP_Root_CA.pem
+SERVER_KEY_PATH=$KEY_DIR/Lamassu_OP.key
+SERVER_CERT_PATH=$CERT_DIR/Lamassu_OP.pem
+
 openssl genrsa \
-  -out $CERT_DIR/root-ca.key.pem \
-  4096
+  -out $CA_KEY_PATH \
+  4096 >> $LOG_FILE 2>&1
 
 openssl req \
   -x509 \
   -new \
   -nodes \
-  -key $CERT_DIR/root-ca.key.pem \
+  -key $CA_KEY_PATH \
   -days 3560 \
-  -out $CERT_DIR/root-ca.crt.pem \
-  -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator CA/CN=lamassu-operator.is"
+  -out $CA_PATH \
+  -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator CA/CN=lamassu-operator.is" \
+  >> $LOG_FILE 2>&1
 
 openssl genrsa \
-  -out $CERT_DIR/server.key.pem \
-  4096
+  -out $SERVER_KEY_PATH \
+  4096 >> $LOG_FILE 2>&1
 
 openssl req -new \
-  -key $CERT_DIR/server.key.pem \
-  -out $CERT_DIR/server.csr.pem \
-  -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator/CN=$DOMAIN"
+  -key $SERVER_KEY_PATH \
+  -out /tmp/Lamassu_OP.csr.pem \
+  -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator/CN=$DOMAIN" \
+  >> $LOG_FILE 2>&1
 
-# Sign the request from Device with your Root CA
 openssl x509 \
-  -req -in $CERT_DIR/server.csr.pem \
-  -CA $CERT_DIR/root-ca.crt.pem \
-  -CAkey $CERT_DIR/root-ca.key.pem \
+  -req -in /tmp/Lamassu_OP.csr.pem \
+  -CA $CA_PATH \
+  -CAkey $CA_KEY_PATH \
   -CAcreateserial \
-  -out $CERT_DIR/server.crt.pem \
-  -days 3650
+  -out $SERVER_CERT_PATH \
+  -days 3650 >> $LOG_FILE 2>&1
+
+rm /tmp/Lamassu_OP.csr.pem
 
 cat <<EOF > $CONFIG_DIR/lamassu.json
 {
   "postgresql": "postgres://lamassu_pg:$POSTGRES_PW@localhost/lamassu",
   "seedPath": "$SEED_FILE",
+  "caPath": "$CA_PATH",
+  "certPath": "$SERVER_CERT_PATH",
+  "keyPath": "$SERVER_KEY_PATH",
   "logLevel": "debug"
 }
 EOF
 
+echo "Setting up database tables..."
 lamassu-migrate >> $LOG_FILE 2>&1
 
 echo "Installing lamassu-admin..."
