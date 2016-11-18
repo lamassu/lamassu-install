@@ -30,8 +30,9 @@ v lamassu-register
 
 ------------------------------------
 
-- need a way to reset bill counts
-- need a way to reset cashbox
-- convert json into json-schema
+- machine actions
+  v need a way to reset bill counts
+  - need a way to reset cashbox
+- convert json into json-schema for validating
 
 

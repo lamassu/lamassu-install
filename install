@@ -102,6 +102,7 @@ cat <<EOF > $CONFIG_DIR/lamassu.json
   "caPath": "$CA_PATH",
   "certPath": "$SERVER_CERT_PATH",
   "keyPath": "$SERVER_KEY_PATH",
+  "hostname": "$DOMAIN",
   "logLevel": "debug"
 }
 EOF
