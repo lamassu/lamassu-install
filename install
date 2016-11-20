@@ -12,7 +12,6 @@ if [ "$(whoami)" != "root" ]; then
 fi
 
 IP=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
-DOMAIN=$IP
 
 echo "Updating system..."
 curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - >> $LOG_FILE 2>&1
@@ -67,6 +66,7 @@ openssl genrsa \
 
 openssl req \
   -x509 \
+  -sha256 \
   -new \
   -nodes \
   -key $CA_KEY_PATH \
@@ -82,7 +82,11 @@ openssl genrsa \
 openssl req -new \
   -key $SERVER_KEY_PATH \
   -out /tmp/Lamassu_OP.csr.pem \
-  -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator/CN=$DOMAIN" \
+  -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator/CN=$IP" \
+  -reqexts SAN \
+  -sha256 \
+  -config <(cat /etc/ssl/openssl.cnf \
+      <(printf "[SAN]\nsubjectAltName=IP.1:$IP")) \
   >> $LOG_FILE 2>&1
 
 openssl x509 \
@@ -91,6 +95,9 @@ openssl x509 \
   -CAkey $CA_KEY_PATH \
   -CAcreateserial \
   -out $SERVER_CERT_PATH \
+  -extfile <(cat /etc/ssl/openssl.cnf \
+      <(printf "[SAN]\nsubjectAltName=IP.1:$IP")) \
+  -extensions SAN \
   -days 3650 >> $LOG_FILE 2>&1
 
 rm /tmp/Lamassu_OP.csr.pem
@@ -102,7 +109,7 @@ cat <<EOF > $CONFIG_DIR/lamassu.json
   "caPath": "$CA_PATH",
   "certPath": "$SERVER_CERT_PATH",
   "keyPath": "$SERVER_KEY_PATH",
-  "hostname": "$DOMAIN",
+  "hostname": "$IP",
   "logLevel": "debug"
 }
 EOF
@@ -111,7 +118,7 @@ echo "Setting up database tables..."
 lamassu-migrate >> $LOG_FILE 2>&1
 
 echo "Installing lamassu-admin..."
-lamassu-domain $DOMAIN >> $LOG_FILE 2>&1
+lamassu-domain $IP >> $LOG_FILE 2>&1
 ADMIN_REGISTRATION_URL=`lamassu-register admin 2>> $LOG_FILE`
 
 echo "Starting lamassu-admin..."
