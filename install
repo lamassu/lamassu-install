@@ -11,6 +11,12 @@ if [ "$(whoami)" != "root" ]; then
   exit 3
 fi
 
+echo "Enabling swap file for install only"
+fallocate -l 1G /swapfile >> $LOG_FILE 2>&1
+chmod 600 /swapfile >> $LOG_FILE 2>&1
+mkswap /swapfile >> $LOG_FILE 2>&1
+swapon /swapfile >> $LOG_FILE 2>&1
+
 IP=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
 
 echo "Updating system..."
@@ -142,6 +148,9 @@ ufw allow ssh >> $LOG_FILE 2>&1
 ufw allow 443/tcp >> $LOG_FILE 2>&1  # Admin
 ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
 ufw -f enable >> $LOG_FILE 2>&1
+
+echo "Disabling swap file"
+swapoff /swapfile >> $LOG_FILE 2>&1
 
 echo
 echo "Done! Now it's time to configure Lamassu stack."
