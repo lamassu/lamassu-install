@@ -7,10 +7,17 @@ Instructions
 ------------
 
 1. Start a new Digital Ocean droplet
-2. ssh into the droplet and paste the following command:
+
+2. ssh into the droplet
+
+    ```
+    ssh root@<your-new-ip-address>
+    ```
+
+3. Paste the following command once you're logged in:
 
     ```
     curl -# https://raw.githubusercontent.com/lamassu/lamassu-install/alpha-elm/install | bash
     ```
 
-3. You should be set. Just follow the instructions on the screen to open your dashboard.
+4. You should be set. Just follow the instructions on the screen to open your dashboard.

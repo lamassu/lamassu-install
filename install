@@ -158,7 +158,6 @@ echo
 echo "Activation URL for lamassu-admin:"
 echo $ADMIN_REGISTRATION_URL
 echo
-echo "Please write this down in a safe place."
 echo -e "\n*** IMPORTANT ***"
 echo "Backup the contents of $SEED_FILE in a safe place."
 echo "This seed will allow you to retrieve system passwords, including "
