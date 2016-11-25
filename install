@@ -116,7 +116,9 @@ cat <<EOF > $CONFIG_DIR/lamassu.json
   "certPath": "$SERVER_CERT_PATH",
   "keyPath": "$SERVER_KEY_PATH",
   "hostname": "$IP",
-  "logLevel": "debug"
+  "logLevel": "debug",
+  "pluginPath": "/usr/local/share/.config/yarn/global/node_modules",
+  "lamassuServerPath": "/usr/local/share/.config/yarn/global/node_modules/lamassu-server"
 }
 EOF
 
