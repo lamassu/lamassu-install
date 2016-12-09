@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
+export LOG_FILE=/tmp/install.log
+
+decho () {
+  echo `date +"%H:%M:%S"` $1
+  echo `date +"%H:%M:%S"` $1 >> $LOG_FILE
+}
+
 retry() {
   local -r -i max_attempts="$1"; shift
   local -r cmd="$@"
@@ -23,7 +30,6 @@ retry() {
   done
 }
 
-export LOG_FILE=/tmp/install.log
 rm -f $LOG_FILE
 
 echo -e "\nStarting \033[1mlamassu-server\033[0m install. This will take a few minutes...\n"
@@ -34,7 +40,7 @@ if [ "$(whoami)" != "root" ]; then
 fi
 
 # So we don't run out of memory
-echo "Enabling swap file for install only..."
+decho "Enabling swap file for install only..."
 fallocate -l 1G /swapfile >> $LOG_FILE 2>&1
 chmod 600 /swapfile >> $LOG_FILE 2>&1
 mkswap /swapfile >> $LOG_FILE 2>&1
@@ -42,30 +48,30 @@ swapon /swapfile >> $LOG_FILE 2>&1
 
 IP=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
 
-echo "Updating system..."
+decho "Updating system..."
 curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - >> $LOG_FILE 2>&1
 add-apt-repository -y ppa:bitcoin/bitcoin >> $LOG_FILE 2>&1
 add-apt-repository -y ppa:ethereum/ethereum >> $LOG_FILE 2>&1
 apt update >> $LOG_FILE 2>&1
 
-echo "Installing necessary packages..."
+decho "Installing necessary packages..."
 apt install nodejs python-minimal ethereum bitcoind build-essential postgresql libpq-dev -y -q >> $LOG_FILE 2>&1
 
-echo "Generating seed..."
+decho "Generating seed..."
 SEEDS_DIR=$HOME/seeds
 SEED_FILE=$SEEDS_DIR/seed.txt
 mkdir -p $SEEDS_DIR >> $LOG_FILE 2>&1
 SEED=$(openssl rand -hex 32)
 echo $SEED > $SEED_FILE
 
-echo "Installing yarn package manager for node..."
+decho "Installing yarn package manager for node..."
 npm -g --unsafe-perm install yarn  >> $LOG_FILE 2>&1
 
-echo "Installing lamassu-server..."
+decho "Installing lamassu-server..."
 retry 3 yarn global add pm2 >> $LOG_FILE 2>&1
 retry 3 yarn global add lamassu/lamassu-server#nextgen >> $LOG_FILE 2>&1
 
-echo "Creating postgres user..."
+decho "Creating postgres user..."
 POSTGRES_PW=$(hkdf postgres-pw $SEED)
 su -l postgres >> $LOG_FILE 2>&1 <<EOF
   psql -c "CREATE ROLE lamassu_pg WITH LOGIN SUPERUSER PASSWORD '$POSTGRES_PW';"
@@ -81,7 +87,7 @@ CONFIG_DIR=/etc/lamassu
 mkdir -p $CERT_DIR >> $LOG_FILE 2>&1
 mkdir -p $CONFIG_DIR >> $LOG_FILE 2>&1
 
-echo "Generating SSL certificates..."
+decho "Generating SSL certificates..."
 
 CA_KEY_PATH=$KEY_DIR/Lamassu_OP_Root_CA.key
 CA_PATH=$CERT_DIR/Lamassu_OP_Root_CA.pem
@@ -144,19 +150,19 @@ cat <<EOF > $CONFIG_DIR/lamassu.json
 }
 EOF
 
-echo "Setting up database tables..."
+decho "Setting up database tables..."
 lamassu-migrate >> $LOG_FILE 2>&1
 
-echo "Setting up lamassu-admin..."
+decho "Setting up lamassu-admin..."
 ADMIN_REGISTRATION_URL=`lamassu-register admin 2>> $LOG_FILE`
 
-echo "Starting lamassu-admin..."
+decho "Starting lamassu-admin..."
 pm2 start lamassu-admin-server >> $LOG_FILE 2>&1
 pm2 start lamassu-server --restart-delay 3000 >> $LOG_FILE 2>&1
 pm2 save >> $LOG_FILE 2>&1
 pm2 startup >> $LOG_FILE 2>&1
 
-echo "Setting up backups..."
+decho "Setting up backups..."
 BIN=$(npm -g bin)
 BACKUP_DIR=$HOME/backups/postgresql
 mkdir -p $BACKUP_DIR
@@ -166,17 +172,17 @@ BACKUP_CRON="@daily $BIN/backup-pg > /dev/null"
 echo $BACKUP_CRON | crontab -u postgres - >> $LOG_FILE 2>&1
 backup-pg >> $LOG_FILE 2>&1
 
-echo "Setting up firewall..."
+decho "Setting up firewall..."
 ufw allow ssh >> $LOG_FILE 2>&1
 ufw allow 443/tcp >> $LOG_FILE 2>&1   # Admin
 ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
 ufw -f enable >> $LOG_FILE 2>&1
 
-echo "Disabling swap file..."
+decho "Disabling swap file..."
 swapoff /swapfile >> $LOG_FILE 2>&1
 
 echo
-echo "Done! Now it's time to configure Lamassu stack."
+decho "Done! Now it's time to configure Lamassu stack."
 echo
 echo "Activation URL for lamassu-admin:"
 echo $ADMIN_REGISTRATION_URL
