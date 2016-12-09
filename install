@@ -11,6 +11,7 @@ if [ "$(whoami)" != "root" ]; then
   exit 3
 fi
 
+# So we don't run out of memory
 echo "Enabling swap file for install only..."
 fallocate -l 1G /swapfile >> $LOG_FILE 2>&1
 chmod 600 /swapfile >> $LOG_FILE 2>&1
@@ -39,9 +40,7 @@ echo "Installing yarn package manager for node..."
 npm -g --verbose --unsafe-perm install yarn  >> $LOG_FILE 2>&1
 
 echo "Installing lamassu-server..."
-yarn global add pm2 https://github.com/lamassu/lamassu-server/tarball/winston \
-  https://github.com/lamassu/lamassu-scripts/tarball/alpha \
-  https://github.com/lamassu/lamassu-admin-server/tarball/master >> $LOG_FILE 2>&1
+yarn global add pm2 lamassu/lamassu-server#nextgen >> $LOG_FILE 2>&1
 
 echo "Creating postgres user..."
 POSTGRES_PW=$(hkdf postgres-pw $SEED)
@@ -125,13 +124,13 @@ EOF
 echo "Setting up database tables..."
 lamassu-migrate >> $LOG_FILE 2>&1
 
-echo "Installing lamassu-admin..."
+echo "Setting up lamassu-admin..."
 lamassu-domain $IP >> $LOG_FILE 2>&1
 ADMIN_REGISTRATION_URL=`lamassu-register admin 2>> $LOG_FILE`
 
 echo "Starting lamassu-admin..."
-pm2 start lamassu-admin-server --env '{"NODE_ENV": "production"}' >> $LOG_FILE 2>&1
-pm2 start lamassu-server --env '{"NODE_ENV": "production"}' --restart-delay 10000 >> $LOG_FILE 2>&1
+pm2 start lamassu-admin-server >> $LOG_FILE 2>&1
+pm2 start lamassu-server --env --restart-delay 3000 >> $LOG_FILE 2>&1
 pm2 save >> $LOG_FILE 2>&1
 pm2 startup >> $LOG_FILE 2>&1
 
@@ -147,7 +146,7 @@ backup-pg >> $LOG_FILE 2>&1
 
 echo "Setting up firewall..."
 ufw allow ssh >> $LOG_FILE 2>&1
-ufw allow 443/tcp >> $LOG_FILE 2>&1  # Admin
+ufw allow 443/tcp >> $LOG_FILE 2>&1   # Admin
 ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
 ufw -f enable >> $LOG_FILE 2>&1
 
