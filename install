@@ -171,15 +171,15 @@ pm2 save >> $LOG_FILE 2>&1
 pm2 startup >> $LOG_FILE 2>&1
 
 decho "Setting up backups..."
-BIN=$(npm -g bin)
+BIN=$(yarn global bin)
 BACKUP_DIR=/var/backups/postgresql
 mkdir -p $BACKUP_DIR
 chown root:postgres $BACKUP_DIR >> $LOG_FILE 2>&1
-chmod 664 $BACKUP_DIR >> $LOG_FILE 2>&1
-BACKUP_CRON="@daily $BIN/backup-pg > /dev/null"
+chmod 775 $BACKUP_DIR >> $LOG_FILE 2>&1
+BACKUP_CRON="@daily $BIN/lamassu-backup-pg > /dev/null"
 echo $BACKUP_CRON | crontab -u postgres - >> $LOG_FILE 2>&1
 cd ~postgres
-su postgres -c backup-pg >> $LOG_FILE 2>&1
+su postgres -c lamassu-backup-pg >> $LOG_FILE 2>&1
 cd ~
 
 decho "Setting up firewall..."
