@@ -129,7 +129,7 @@ ADMIN_REGISTRATION_URL=`lamassu-register admin 2>> $LOG_FILE`
 
 echo "Starting lamassu-admin..."
 pm2 start lamassu-admin-server >> $LOG_FILE 2>&1
-pm2 start lamassu-server --env --restart-delay 3000 >> $LOG_FILE 2>&1
+pm2 start lamassu-server --restart-delay 3000 >> $LOG_FILE 2>&1
 pm2 save >> $LOG_FILE 2>&1
 pm2 startup >> $LOG_FILE 2>&1
 
