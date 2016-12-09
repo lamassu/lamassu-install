@@ -37,7 +37,7 @@ SEED=$(openssl rand -hex 32)
 echo $SEED > $SEED_FILE
 
 echo "Installing yarn package manager for node..."
-npm -g --verbose --unsafe-perm install yarn  >> $LOG_FILE 2>&1
+npm -g --unsafe-perm install yarn  >> $LOG_FILE 2>&1
 
 echo "Installing lamassu-server..."
 yarn global add pm2 lamassu/lamassu-server#nextgen >> $LOG_FILE 2>&1
@@ -115,7 +115,7 @@ cat <<EOF > $CONFIG_DIR/lamassu.json
   "certPath": "$SERVER_CERT_PATH",
   "keyPath": "$SERVER_KEY_PATH",
   "hostname": "$IP",
-  "logLevel": "debug",
+  "logLevel": "info",
   "pluginPath": "/usr/local/share/.config/yarn/global/node_modules",
   "lamassuServerPath": "/usr/local/share/.config/yarn/global/node_modules/lamassu-server"
 }
@@ -125,7 +125,6 @@ echo "Setting up database tables..."
 lamassu-migrate >> $LOG_FILE 2>&1
 
 echo "Setting up lamassu-admin..."
-lamassu-domain $IP >> $LOG_FILE 2>&1
 ADMIN_REGISTRATION_URL=`lamassu-register admin 2>> $LOG_FILE`
 
 echo "Starting lamassu-admin..."
