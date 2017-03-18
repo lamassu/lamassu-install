@@ -165,7 +165,7 @@ lamassu-migrate >> $LOG_FILE 2>&1
 
 decho "Setting up lamassu-admin..."
 ADMIN_REGISTRATION_URL=`lamassu-register admin 2>> $LOG_FILE`
-lamassu-apply-defaults 2>> $LOG_FILE
+lamassu-apply-defaults 2>> $LOG_FILE 2>&1
 
 decho "Starting lamassu-admin..."
 pm2 start lamassu-admin-server >> $LOG_FILE 2>&1
