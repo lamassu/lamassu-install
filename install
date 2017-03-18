@@ -3,6 +3,8 @@ set -e
 
 export LOG_FILE=/tmp/install.log
 
+# Look into http://unix.stackexchange.com/questions/140734/configure-localtime-dpkg-reconfigure-tzdata
+
 decho () {
   echo `date +"%H:%M:%S"` $1
   echo `date +"%H:%M:%S"` $1 >> $LOG_FILE
@@ -174,14 +176,11 @@ pm2 startup >> $LOG_FILE 2>&1
 decho "Setting up backups..."
 BIN=$(yarn global bin)
 BACKUP_DIR=/var/backups/postgresql
+BACKUP_CMD=$BIN/lamassu-backup-pg
 mkdir -p $BACKUP_DIR
-chown root:postgres $BACKUP_DIR >> $LOG_FILE 2>&1
-chmod 775 $BACKUP_DIR >> $LOG_FILE 2>&1
-BACKUP_CRON="@daily $BIN/lamassu-backup-pg > /dev/null"
-echo $BACKUP_CRON | crontab -u postgres - >> $LOG_FILE 2>&1
-cd ~postgres
-su postgres -c lamassu-backup-pg >> $LOG_FILE 2>&1
-cd ~
+BACKUP_CRON="@daily $BACKUP_CMD > /dev/null"
+echo $BACKUP_CRON | crontab - >> $LOG_FILE 2>&1
+$BACKUP_CMD >> $LOG_FILE 2>&1
 
 decho "Setting up firewall..."
 ufw allow ssh >> $LOG_FILE 2>&1
