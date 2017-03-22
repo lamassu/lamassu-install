@@ -146,6 +146,8 @@ openssl x509 \
 
 rm /tmp/Lamassu_OP.csr.pem
 
+NODE_MODULES=/root/.config/yarn/global/node_modules
+
 cat <<EOF > $CONFIG_DIR/lamassu.json
 {
   "postgresql": "postgres://lamassu_pg:$POSTGRES_PW@localhost/lamassu",
@@ -155,8 +157,8 @@ cat <<EOF > $CONFIG_DIR/lamassu.json
   "keyPath": "$SERVER_KEY_PATH",
   "hostname": "$IP",
   "logLevel": "info",
-  "pluginPath": "/usr/local/share/.config/yarn/global/node_modules",
-  "lamassuServerPath": "/usr/local/share/.config/yarn/global/node_modules/lamassu-server"
+  "pluginPath": "$NODE_MODULES",
+  "lamassuServerPath": "$NODE_MODULES/lamassu-server"
 }
 EOF
 
