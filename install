@@ -196,11 +196,17 @@ swapoff /swapfile >> $LOG_FILE 2>&1
 echo
 decho "Done! Now it's time to configure Lamassu stack."
 echo
-echo "Activation URL for lamassu-admin:"
-echo $ADMIN_REGISTRATION_URL
-echo
 echo -e "\n*** IMPORTANT ***"
-echo "Backup the contents of $SEED_FILE in a safe place."
-echo "This seed will allow you to retrieve system passwords, including "
+echo "In a private space, run lamassu-mnemonic, write down the words"
+echo "and keep them in a safe place."
+echo
+echo "This secret will allow you to retrieve system passwords, including "
 echo "the keys to your Ethereum accounts."
 echo
+echo
+echo "To set up bitcoind as a Bitcoin wallet, run:"
+echo "lamassu-install-bitcoind"
+echo "Then select it as your wallet in the admin."
+echo
+echo "Activation URL for lamassu-admin:"
+echo $ADMIN_REGISTRATION_URL
