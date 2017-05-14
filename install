@@ -7,6 +7,7 @@ NODE_MODULES=/usr/local/share/.config/yarn/global/node_modules
 CERT_DIR=/etc/ssl/certs
 KEY_DIR=/etc/ssl/private
 CONFIG_DIR=/etc/lamassu
+MIGRATE_STATE_PATH=$CONFIG_DIR/.migrate
 CA_KEY_PATH=$KEY_DIR/Lamassu_OP_Root_CA.key
 CA_PATH=$CERT_DIR/Lamassu_OP_Root_CA.pem
 SERVER_KEY_PATH=$KEY_DIR/Lamassu_OP.key
@@ -154,7 +155,8 @@ cat <<EOF > $CONFIG_DIR/lamassu.json
   "keyPath": "$SERVER_KEY_PATH",
   "hostname": "$IP",
   "logLevel": "info",
-  "lamassuServerPath": "$NODE_MODULES/lamassu-server"
+  "lamassuServerPath": "$NODE_MODULES/lamassu-server",
+  "migrateStatePath": "$MIGRATE_STATE_PATH"
 }
 EOF
 
