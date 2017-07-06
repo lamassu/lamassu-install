@@ -73,12 +73,10 @@ IP=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
 
 decho "Updating system..."
 curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - >> $LOG_FILE 2>&1
-add-apt-repository -y ppa:bitcoin/bitcoin >> $LOG_FILE 2>&1
-add-apt-repository -y ppa:ethereum/ethereum >> $LOG_FILE 2>&1
 apt update >> $LOG_FILE 2>&1
 
 decho "Installing necessary packages..."
-apt install nodejs python-minimal ethereum bitcoind build-essential postgresql libpq-dev -y -q >> $LOG_FILE 2>&1
+apt install nodejs python-minimal build-essential postgresql libpq-dev -y -q >> $LOG_FILE 2>&1
 
 decho "Generating seed..."
 mkdir -p $SEEDS_DIR >> $LOG_FILE 2>&1
@@ -198,16 +196,7 @@ echo "In a private space, run lamassu-mnemonic, write down the words"
 echo "and keep them in a safe place."
 echo
 echo "This secret will allow you to retrieve system passwords, including "
-echo "the keys to your Ethereum accounts."
-echo
-echo
-echo "To set up bitcoind as a Bitcoin wallet, run:"
-echo "lamassu-install-bitcoind"
-echo "Then select it as your wallet in the admin."
-echo
-echo "To set up geth as an Ethereum wallet, run:"
-echo "lamassu-install-geth"
-echo "Then select it as your wallet in the admin."
+echo "the keys to some of your crypto accounts."
 echo
 echo
 echo "Activation URL for lamassu-admin:"
