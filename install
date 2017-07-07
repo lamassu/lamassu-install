@@ -15,6 +15,7 @@ SERVER_CERT_PATH=$CERT_DIR/Lamassu_OP.pem
 SEEDS_DIR=$HOME/seeds
 SEED_FILE=$SEEDS_DIR/seed.txt
 BACKUP_DIR=/var/backups/postgresql
+BLOCKCHAIN_DIR=/mnt/blockchains
 
 # Look into http://unix.stackexchange.com/questions/140734/configure-localtime-dpkg-reconfigure-tzdata
 
@@ -154,7 +155,8 @@ cat <<EOF > $CONFIG_DIR/lamassu.json
   "hostname": "$IP",
   "logLevel": "info",
   "lamassuServerPath": "$NODE_MODULES/lamassu-server",
-  "migrateStatePath": "$MIGRATE_STATE_PATH"
+  "migrateStatePath": "$MIGRATE_STATE_PATH",
+  "blockchainDir": "$BLOCKCHAIN_DIR"
 }
 EOF
 
