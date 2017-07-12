@@ -3,7 +3,6 @@ set -e
 
 export LOG_FILE=/tmp/install.log
 
-NODE_MODULES=/usr/local/share/.config/yarn/global/node_modules
 CERT_DIR=/etc/ssl/certs
 KEY_DIR=/etc/ssl/private
 CONFIG_DIR=/etc/lamassu
@@ -35,7 +34,7 @@ retry() {
     then
         echo
         echo "****************************************************************"
-        echo "Attempt $attempt_num failed and there are no more attempts left!"
+        echo "Attempt $attempt_num failed and there are no more attempts left! ($cmd)"
         return 1
     else
         echo
@@ -84,12 +83,12 @@ mkdir -p $SEEDS_DIR >> $LOG_FILE 2>&1
 SEED=$(openssl rand -hex 32)
 echo $SEED > $SEED_FILE
 
-decho "Installing yarn package manager for node..."
-npm -g --unsafe-perm install yarn  >> $LOG_FILE 2>&1
+decho "Installing latest npm package manager for node..."
+npm -g --unsafe-perm install npm@5  >> $LOG_FILE 2>&1
+NODE_MODULES=$(npm -g root)
 
 decho "Installing lamassu-server..."
-retry 3 yarn global add pm2 >> $LOG_FILE 2>&1
-retry 3 yarn global add lamassu/lamassu-server#v5 >> $LOG_FILE 2>&1
+retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#v5 >> $LOG_FILE 2>&1
 
 decho "Creating postgres user..."
 POSTGRES_PW=$(hkdf postgres-pw $SEED)
@@ -167,14 +166,8 @@ decho "Setting up lamassu-admin..."
 ADMIN_REGISTRATION_URL=`lamassu-register admin 2>> $LOG_FILE`
 lamassu-apply-defaults >> $LOG_FILE 2>&1
 
-decho "Starting lamassu-admin..."
-pm2 start lamassu-admin-server >> $LOG_FILE 2>&1
-pm2 start lamassu-server --restart-delay 3000 >> $LOG_FILE 2>&1
-pm2 save >> $LOG_FILE 2>&1
-pm2 startup >> $LOG_FILE 2>&1
-
 decho "Setting up backups..."
-BIN=$(yarn global bin)
+BIN=$(npm -g bin)
 BACKUP_CMD=$BIN/lamassu-backup-pg
 mkdir -p $BACKUP_DIR
 BACKUP_CRON="@daily $BACKUP_CMD > /dev/null"
@@ -186,6 +179,29 @@ ufw allow ssh >> $LOG_FILE 2>&1
 ufw allow 443/tcp >> $LOG_FILE 2>&1   # Admin
 ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
 ufw -f enable >> $LOG_FILE 2>&1
+
+decho "Setting up supervisor..."
+cat <<EOF > /etc/supervisor/conf.d/lamassu-server.conf
+[program:lamassu-server]
+command=/usr/bin/lamassu-server
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/supervisor/lamassu-server.err.log
+stdout_logfile=/var/log/supervisor/lamassu-server.out.log
+environment=HOME="/root"
+EOF
+
+cat <<EOF > /etc/supervisor/conf.d/lamassu-admin-server.conf
+[program:lamassu-admin-server]
+command=/usr/bin/lamassu-admin-server
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/supervisor/lamassu-admin-server.err.log
+stdout_logfile=/var/log/supervisor/lamassu-admin-server.out.log
+environment=HOME="/root"
+EOF
+
+service supervisor restart >> $LOG_FILE 2>&1
 
 decho "Disabling swap file..."
 swapoff /swapfile >> $LOG_FILE 2>&1
