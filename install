@@ -171,7 +171,7 @@ BIN=$(npm -g bin)
 BACKUP_CMD=$BIN/lamassu-backup-pg
 mkdir -p $BACKUP_DIR
 BACKUP_CRON="@daily $BACKUP_CMD > /dev/null"
-echo $BACKUP_CRON | crontab - >> $LOG_FILE 2>&1
+echo "$BACKUP_CRON" | crontab - >> $LOG_FILE 2>&1
 $BACKUP_CMD >> $LOG_FILE 2>&1
 
 decho "Setting up firewall..."
