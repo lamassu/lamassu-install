@@ -84,7 +84,7 @@ SEED=$(openssl rand -hex 32)
 echo $SEED > $SEED_FILE
 
 decho "Installing latest npm package manager for node..."
-npm -g --unsafe-perm install npm@5  >> $LOG_FILE 2>&1
+retry 3 npm -g --unsafe-perm install npm@5  >> $LOG_FILE 2>&1
 NODE_MODULES=$(npm -g root)
 
 decho "Installing lamassu-server..."
