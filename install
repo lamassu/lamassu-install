@@ -185,6 +185,7 @@ decho "Setting up firewall..."
 ufw allow ssh >> $LOG_FILE 2>&1
 ufw allow 443/tcp >> $LOG_FILE 2>&1   # Admin
 ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
+ufw allow 8071/tcp >> $LOG_FILE 2>&1  # Lamassu support
 ufw -f enable >> $LOG_FILE 2>&1
 
 decho "Setting up supervisor..."
