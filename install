@@ -89,6 +89,7 @@ echo $SEED > $SEED_FILE
 decho "Installing latest npm package manager for node..."
 retry 3 npm -g --unsafe-perm install npm@5  >> $LOG_FILE 2>&1
 NODE_MODULES=$(npm -g root)
+NPM_BIN=$(npm -g bin)
 
 decho "Installing lamassu-server..."
 retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#v5 >> $LOG_FILE 2>&1
@@ -201,7 +202,7 @@ ufw -f enable >> $LOG_FILE 2>&1
 decho "Setting up supervisor..."
 cat <<EOF > /etc/supervisor/conf.d/lamassu-server.conf
 [program:lamassu-server]
-command=/usr/bin/lamassu-server
+command=${NPM_BIN}/lamassu-server
 autostart=true
 autorestart=true
 stderr_logfile=/var/log/supervisor/lamassu-server.err.log
@@ -211,7 +212,7 @@ EOF
 
 cat <<EOF > /etc/supervisor/conf.d/lamassu-admin-server.conf
 [program:lamassu-admin-server]
-command=/usr/bin/lamassu-admin-server
+command=${NPM_BIN}/lamassu-admin-server
 autostart=true
 autorestart=true
 stderr_logfile=/var/log/supervisor/lamassu-admin-server.err.log
