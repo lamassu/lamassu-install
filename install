@@ -92,7 +92,7 @@ NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
 decho "Installing lamassu-server..."
-retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#v5 >> $LOG_FILE 2>&1
+retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#stable >> $LOG_FILE 2>&1
 
 decho "Creating postgres user..."
 POSTGRES_PW=$(hkdf postgres-pw $SEED)
@@ -164,7 +164,6 @@ cat <<EOF > $CONFIG_DIR/lamassu.json
   "keyPath": "$SERVER_KEY_PATH",
   "hostname": "$IP",
   "logLevel": "info",
-  "lamassuServerPath": "$NODE_MODULES/lamassu-server",
   "migrateStatePath": "$MIGRATE_STATE_PATH",
   "blockchainDir": "$BLOCKCHAIN_DIR",
   "ofacDataDir": "$OFAC_DATA_DIR",
