@@ -75,7 +75,7 @@ IP=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
 
 decho "Updating system..."
 sleep 10
-curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - >> $LOG_FILE 2>&1
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - >> $LOG_FILE 2>&1
 apt update >> $LOG_FILE 2>&1
 
 decho "Installing necessary packages..."
