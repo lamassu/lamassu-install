@@ -71,7 +71,7 @@ chmod 600 /swapfile >> $LOG_FILE 2>&1
 mkswap /swapfile >> $LOG_FILE 2>&1
 swapon /swapfile >> $LOG_FILE 2>&1
 
-IP=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
+IP=$(ifconfig eth0 | grep "inet" | grep -v "inet6" | awk -F: '{print $2}' | awk '{print $1}')
 
 decho "Updating system..."
 sleep 10
