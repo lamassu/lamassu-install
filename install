@@ -71,7 +71,7 @@ chmod 600 /swapfile >> $LOG_FILE 2>&1
 mkswap /swapfile >> $LOG_FILE 2>&1
 swapon /swapfile >> $LOG_FILE 2>&1
 
-IP=$(ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
+IP=$(ifconfig eth0 | grep "inet" | grep -v "inet6" | awk -F: '{print $2}' | awk '{print $1}')
 
 decho "Updating system..."
 sleep 10
@@ -188,7 +188,7 @@ BIN=$(npm -g bin)
 BACKUP_CMD=$BIN/lamassu-backup-pg
 mkdir -p $BACKUP_DIR
 BACKUP_CRON="@daily $BACKUP_CMD > /dev/null"
-echo "$BACKUP_CRON" | crontab - >> $LOG_FILE 2>&1
+(crontab -l 2>/dev/null || echo -n ""; echo "$BACKUP_CRON") | crontab - >> $LOG_FILE 2>&1
 $BACKUP_CMD >> $LOG_FILE 2>&1
 
 decho "Setting up firewall..."
