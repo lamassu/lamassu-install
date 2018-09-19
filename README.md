@@ -17,7 +17,7 @@ Instructions
 3. Paste the following command once you're logged in:
 
     ```
-    curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/nextgen/install | bash
+    curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/stable/install | bash
     ```
 
 4. You should be set. Just follow the instructions on the screen to open your dashboard.
