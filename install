@@ -64,6 +64,15 @@ if [ "$(whoami)" != "root" ]; then
   exit 3
 fi
 
+release=$(lsb_release -rs)
+processor=$(uname -i)
+if [ "$release" != "16.04" ] || [ "$processor" != "x86_64" ]; then
+    echo "You're attempting to install on an unsupported Linux distribution or release."
+    uname -a
+    echo "Please return to DigitalOcean and create a droplet running Ubuntu 16.04 x64 instead."
+    exit 1
+fi
+
 # So we don't run out of memory
 decho "Enabling swap file for install only..."
 fallocate -l 1G /swapfile >> $LOG_FILE 2>&1
