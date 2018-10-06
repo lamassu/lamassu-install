@@ -101,7 +101,7 @@ NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
 decho "Installing lamassu-server..."
-retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#stable >> $LOG_FILE 2>&1
+retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#master >> $LOG_FILE 2>&1
 
 decho "Creating postgres user..."
 POSTGRES_PW=$(hkdf postgres-pw $SEED)
@@ -235,7 +235,7 @@ swapoff /swapfile >> $LOG_FILE 2>&1
 
 # disable exitting on error in case DO changes motd scripts
 set +e
-chmod -x /etc/update-motd.d/*-release-upgrade     
+chmod -x /etc/update-motd.d/*-release-upgrade
 chmod -x /etc/update-motd.d/*-updates-available
 chmod -x /etc/update-motd.d/*-reboot-required
 chmod -x /etc/update-motd.d/*-help-text
