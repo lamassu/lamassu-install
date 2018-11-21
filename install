@@ -165,7 +165,7 @@ openssl x509 \
 rm /tmp/Lamassu_OP.csr.pem
 
 decho "Copying Lamassu certificate authority..."
-LAMASSU_CA_FILE=${INSTALL_DIR}/Lamassu_CA.pem
+LAMASSU_CA_FILE=${INSTALL_DIR}/node_modules/lamassu-server/Lamassu_CA.pem
 cp -v $LAMASSU_CA_FILE $LAMASSU_CA_PATH >> $LOG_FILE 2>&1
 
 mkdir -p $OFAC_DATA_DIR >> $LOG_FILE 2>&1
