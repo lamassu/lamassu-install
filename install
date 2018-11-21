@@ -104,9 +104,7 @@ decho "Installing lamassu-server..."
 mkdir -vp ${INSTALL_DIR} >> $LOG_FILE 2>&1
 cd ${INSTALL_DIR} >> $LOG_FILE 2>&1
 retry 3 npm --unsafe-perm install --production lamassu/lamassu-server#master >> $LOG_FILE 2>&1
-shopt -s dotglob >> $LOG_FILE 2>&1
-mv -fv ${INSTALL_DIR}/node_modules/lamassu-server/* ${INSTALL_DIR}/ >> $LOG_FILE 2>&1
-rm -Rfv ${INSTALL_DIR}/node_modules/lamassu-server/ >> $LOG_FILE 2>&1
+ln -s ${INSTALL_DIR}/node_modules/lamassu-server/bin ${INSTALL_DIR}/bin >> $LOG_FILE 2>&1
 
 decho "Adding ${INSTALL_DIR}/bin to PATH"
 export PATH=${PATH}:${INSTALL_DIR}/bin
