@@ -183,7 +183,17 @@ cat <<EOF > $CONFIG_DIR/lamassu.json
   },
   "coinAtmRadar": {
     "url": "https://coinatmradar.info/api/lamassu/"
-  }
+  },
+  "ofacSources": [
+    {
+      "name": "sdn_advanced",
+      "url": "https://www.treasury.gov/ofac/downloads/sanctions/1.0/sdn_advanced.xml"
+    },
+    {
+      "name": "cons_advanced",
+      "url": "https://www.treasury.gov/ofac/downloads/sanctions/1.0/cons_advanced.xml"
+    }
+  ]
 }
 EOF
 
