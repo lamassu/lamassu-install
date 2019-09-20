@@ -17,6 +17,7 @@ SEED_FILE=$SEEDS_DIR/seed.txt
 BACKUP_DIR=/var/backups/postgresql
 BLOCKCHAIN_DIR=/mnt/blockchains
 OFAC_DATA_DIR=/var/lamassu/ofac
+ID_PHOTO_CARD_DIR=/opt/lamassu-server/idphotocard
 
 # Look into http://unix.stackexchange.com/questions/140734/configure-localtime-dpkg-reconfigure-tzdata
 
@@ -101,7 +102,7 @@ NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
 decho "Installing lamassu-server..."
-retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#master >> $LOG_FILE 2>&1
+retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#release >> $LOG_FILE 2>&1
 
 decho "Creating postgres user..."
 POSTGRES_PW=$(hkdf postgres-pw $SEED)
@@ -176,12 +177,23 @@ cat <<EOF > $CONFIG_DIR/lamassu.json
   "migrateStatePath": "$MIGRATE_STATE_PATH",
   "blockchainDir": "$BLOCKCHAIN_DIR",
   "ofacDataDir": "$OFAC_DATA_DIR",
+  "idPhotoCardDir": "$ID_PHOTO_CARD_DIR",
   "strike": {
     "baseUrl": "https://api.strike.acinq.co/api/"
   },
   "coinAtmRadar": {
     "url": "https://coinatmradar.info/api/lamassu/"
-  }
+  },
+  "ofacSources": [
+    {
+      "name": "sdn_advanced",
+      "url": "https://www.treasury.gov/ofac/downloads/sanctions/1.0/sdn_advanced.xml"
+    },
+    {
+      "name": "cons_advanced",
+      "url": "https://www.treasury.gov/ofac/downloads/sanctions/1.0/cons_advanced.xml"
+    }
+  ]
 }
 EOF
 
@@ -249,8 +261,10 @@ echo -e "\n*** IMPORTANT ***"
 echo "In a private space, run lamassu-mnemonic, write down the words"
 echo "and keep them in a safe place."
 echo
-echo "This secret will allow you to retrieve system passwords, including "
-echo "the keys to some of your crypto accounts."
+echo "This secret will allow you to retrieve system passwords, such "
+echo "as the keys to your Ethereum account. However, you must still "
+echo "backup your wallets separately. Visit support.lamassu.is for "
+echo "details on regularly backing up your wallets and coins."
 echo
 echo
 echo "Activation URL for lamassu-admin:"
