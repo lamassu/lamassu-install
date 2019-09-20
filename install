@@ -12,13 +12,11 @@ CA_KEY_PATH=$KEY_DIR/Lamassu_OP_Root_CA.key
 CA_PATH=$CERT_DIR/Lamassu_OP_Root_CA.pem
 SERVER_KEY_PATH=$KEY_DIR/Lamassu_OP.key
 SERVER_CERT_PATH=$CERT_DIR/Lamassu_OP.pem
-MNEMONIC_DIR=$CONFIG_DIR/mnemonics 
-MNEMONIC_FILE=$MNEMONIC_DIR/mnemonic.txt 
+SEEDS_DIR=$HOME/seeds
+SEED_FILE=$SEEDS_DIR/seed.txt
 BACKUP_DIR=/var/backups/postgresql
 BLOCKCHAIN_DIR=/mnt/blockchains
 OFAC_DATA_DIR=/var/lamassu/ofac
-ID_PHOTO_CARD_DIR=/opt/lamassu-server/idphotocard
-FRONTCAMERA_DIR=/opt/lamassu-server/frontcamera
 
 # Look into http://unix.stackexchange.com/questions/140734/configure-localtime-dpkg-reconfigure-tzdata
 
@@ -69,10 +67,8 @@ fi
 release=$(lsb_release -rs)
 processor=$(uname -i)
 if [ "$release" != "16.04" ] || [ "$processor" != "x86_64" ]; then
-    echo "You're attempting to install on an unsupported Linux distribution or release ("$release $processor")."
-    echo
+    echo "You're attempting to install on an unsupported Linux distribution or release."
     uname -a
-    echo
     echo "Please return to DigitalOcean and create a droplet running Ubuntu 16.04 x64 instead."
     exit 1
 fi
@@ -94,19 +90,18 @@ apt update >> $LOG_FILE 2>&1
 decho "Installing necessary packages..."
 apt install nodejs python-minimal build-essential supervisor postgresql libpq-dev -y -q >> $LOG_FILE 2>&1
 
+decho "Generating seed..."
+mkdir -p $SEEDS_DIR >> $LOG_FILE 2>&1
+SEED=$(openssl rand -hex 32)
+echo $SEED > $SEED_FILE
+
 decho "Installing latest npm package manager for node..."
 retry 3 npm -g --unsafe-perm install npm@5  >> $LOG_FILE 2>&1
 NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
-decho "Installing lamassu-server v7.3.3..."
-retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#v7.3.3 >> $LOG_FILE 2>&1
-
-decho "Generating mnemonic..."
-mkdir -p $MNEMONIC_DIR >> $LOG_FILE 2>&1
-SEED=$(openssl rand -hex 32)
-MNEMONIC=$(bip39 $SEED)
-echo "$MNEMONIC" > $MNEMONIC_FILE
+decho "Installing lamassu-server..."
+retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#master >> $LOG_FILE 2>&1
 
 decho "Creating postgres user..."
 POSTGRES_PW=$(hkdf postgres-pw $SEED)
@@ -130,7 +125,7 @@ openssl req \
   -new \
   -nodes \
   -key $CA_KEY_PATH \
-  -days 3650 \
+  -days 3560 \
   -out $CA_PATH \
   -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator CA/CN=lamassu-operator.is" \
   >> $LOG_FILE 2>&1
@@ -171,7 +166,7 @@ mkdir -p $OFAC_DATA_DIR
 cat <<EOF > $CONFIG_DIR/lamassu.json
 {
   "postgresql": "postgres://lamassu_pg:$POSTGRES_PW@localhost/lamassu",
-  "mnemonicPath": "$MNEMONIC_FILE",
+  "seedPath": "$SEED_FILE",
   "lamassuCaPath": "$LAMASSU_CA_PATH",
   "caPath": "$CA_PATH",
   "certPath": "$SERVER_CERT_PATH",
@@ -181,24 +176,12 @@ cat <<EOF > $CONFIG_DIR/lamassu.json
   "migrateStatePath": "$MIGRATE_STATE_PATH",
   "blockchainDir": "$BLOCKCHAIN_DIR",
   "ofacDataDir": "$OFAC_DATA_DIR",
-  "idPhotoCardDir": "$ID_PHOTO_CARD_DIR",
-  "frontCameraDir": "$FRONTCAMERA_DIR",
   "strike": {
     "baseUrl": "https://api.strike.acinq.co/api/"
   },
   "coinAtmRadar": {
     "url": "https://coinatmradar.info/api/lamassu/"
-  },
-  "ofacSources": [
-    {
-      "name": "sdn_advanced",
-      "url": "https://www.treasury.gov/ofac/downloads/sanctions/1.0/sdn_advanced.xml"
-    },
-    {
-      "name": "cons_advanced",
-      "url": "https://www.treasury.gov/ofac/downloads/sanctions/1.0/cons_advanced.xml"
-    }
-  ]
+  }
 }
 EOF
 
@@ -256,10 +239,8 @@ chmod -x /etc/update-motd.d/*-release-upgrade
 chmod -x /etc/update-motd.d/*-updates-available
 chmod -x /etc/update-motd.d/*-reboot-required
 chmod -x /etc/update-motd.d/*-help-text
+chmod -x /etc/update-motd.d/*-cloudguest
 set -e
-
-# reset terminal to link new executables
-hash -r
 
 echo
 decho "Done! Now it's time to configure Lamassu stack."
@@ -268,12 +249,9 @@ echo -e "\n*** IMPORTANT ***"
 echo "In a private space, run lamassu-mnemonic, write down the words"
 echo "and keep them in a safe place."
 echo
-echo "This secret will allow you to retrieve system passwords, such "
-echo "as the keys to your Ethereum account. However, you must still "
-echo "backup your wallets separately. Visit support.lamassu.is for "
-echo "details on regularly backing up your wallets and coins."
+echo "This secret will allow you to retrieve system passwords, including "
+echo "the keys to some of your crypto accounts."
 echo
 echo
 echo "Activation URL for lamassu-admin:"
 echo $ADMIN_REGISTRATION_URL
-echo
