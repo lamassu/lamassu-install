@@ -261,6 +261,9 @@ set -e
 # reset terminal to link new executables
 hash -r
 
+# create /mnt/blockchains to obviate block volume
+mkdir /mnt/blockchains/
+
 echo
 decho "Done! Now it's time to configure Lamassu stack."
 echo
