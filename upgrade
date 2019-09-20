@@ -4,8 +4,6 @@ set -e
 export LOG_FILE=/tmp/update.$(date +"%Y%m%d").log
 export NPM_BIN=$(npm -g bin)
 
-SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
-
 rm -f ${LOG_FILE}
 
 decho () {
@@ -28,13 +26,6 @@ if [ "$(whoami)" != "root" ]; then
   exit 3
 fi
 
-# Use a lock file so failed scripts cannot be imediately retried
-# If not the backup created on this script would be replaced
-if ! mkdir /var/lock/lamassu-update; then
-  echo "Script is locked because of a failure." >&2
-  exit 1
-fi
-
 decho "stopping lamassu-server"
 supervisorctl stop lamassu-server >> ${LOG_FILE} 2>&1
 supervisorctl stop lamassu-admin-server >> ${LOG_FILE} 2>&1
@@ -54,22 +45,16 @@ n 8 >> ${LOG_FILE} 2>&1
 decho "version installed $(node -v)"
 export NPM_BIN=$(npm -g bin)
 
-decho "updating to lamassu-server#v7.3.3"
-npm -g install lamassu/lamassu-server#v7.3.3 --unsafe-perm >> ${LOG_FILE} 2>&1
+decho "updating lamassu-server#release"
+npm -g install lamassu/lamassu-server#release --unsafe-perm >> ${LOG_FILE} 2>&1
 
 decho "rebuilding npm deps"
 cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
 npm rebuild >> ${LOG_FILE} 2>&1
 
-{
 decho "running migration"
-  lamassu-migrate >> ${LOG_FILE} 2>&1
-} || { echo "Failure running migrations" ; exit 1 ; }
-
+lamassu-migrate >> ${LOG_FILE} 2>&1
 lamassu-migrate-config >> ${LOG_FILE} 2>&1
-
-decho "update to mnemonic"
-lamassu-update-to-mnemonic --prod >> ${LOG_FILE} 2>&1
 
 decho "update ofac sources"
 lamassu-ofac-update-sources >> ${LOG_FILE} 2>&1
@@ -92,16 +77,14 @@ $BACKUP_CMD >> $LOG_FILE 2>&1
 
 decho "updating motd scripts"
 set +e
-chmod -x /etc/update-motd.d/*-release-upgrade 2>/dev/null
-chmod -x /etc/update-motd.d/*-updates-available 2>/dev/null
-chmod -x /etc/update-motd.d/*-reboot-required 2>/dev/null
-chmod -x /etc/update-motd.d/*-help-text 2>/dev/null
-chmod -x /etc/update-motd.d/*-cloudguest 2>/dev/null
+chmod -x /etc/update-motd.d/*-release-upgrade
+chmod -x /etc/update-motd.d/*-updates-available
+chmod -x /etc/update-motd.d/*-reboot-required
+chmod -x /etc/update-motd.d/*-help-text
+chmod -x /etc/update-motd.d/*-cloudguest
 set -e
 
 # reset terminal to link new executables
 hash -r
-
-rm -r /var/lock/lamassu-update
 
 decho "Update complete!"
