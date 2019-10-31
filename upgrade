@@ -54,8 +54,8 @@ n 8 >> ${LOG_FILE} 2>&1
 decho "version installed $(node -v)"
 export NPM_BIN=$(npm -g bin)
 
-decho "updating to lamassu-server (Defiant Dingirma v7.4)"
-npm -g install lamassu/lamassu-server#v7.4.1 --unsafe-perm >> ${LOG_FILE} 2>&1
+decho "updating to lamassu-server (Defiant Dingirma v7.4.3)"
+npm -g install lamassu/lamassu-server#v7.4.3 --unsafe-perm >> ${LOG_FILE} 2>&1
 
 decho "rebuilding npm deps"
 cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
