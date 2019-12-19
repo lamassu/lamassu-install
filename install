@@ -132,7 +132,7 @@ openssl req \
   -key $CA_KEY_PATH \
   -days 3650 \
   -out $CA_PATH \
-  -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator CA/CN=lamassu-operator.is" \
+  -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator CA/CN=operator.lamassu.is" \
   >> $LOG_FILE 2>&1
 
 openssl genrsa \
