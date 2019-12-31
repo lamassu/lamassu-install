@@ -97,6 +97,7 @@ chmod -x /etc/update-motd.d/*-updates-available 2>/dev/null
 chmod -x /etc/update-motd.d/*-reboot-required 2>/dev/null
 chmod -x /etc/update-motd.d/*-help-text 2>/dev/null
 chmod -x /etc/update-motd.d/*-cloudguest 2>/dev/null
+chmod -x /etc/update-motd.d/*-motd-news 2>/dev/null
 set -e
 
 # reset terminal to link new executables
