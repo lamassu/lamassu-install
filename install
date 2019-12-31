@@ -256,6 +256,8 @@ chmod -x /etc/update-motd.d/*-release-upgrade
 chmod -x /etc/update-motd.d/*-updates-available
 chmod -x /etc/update-motd.d/*-reboot-required
 chmod -x /etc/update-motd.d/*-help-text
+chmod -x /etc/update-motd.d/*-cloudguest
+chmod -x /etc/update-motd.d/*-motd-news
 set -e
 
 # reset terminal to link new executables
