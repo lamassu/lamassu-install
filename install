@@ -79,7 +79,7 @@ if [ "$release" != "16.04" ] || [ "$processor" != "x86_64" ]; then
     exit 1
 fi
 
-if [ -d "/usr/local/lib/node_modules/lamassu-server/" ]
+if [ -d "/usr/local/lib/node_modules/lamassu-server/" ] || [ -d "/usr/lib/node_modules/lamassu-server/" ]
 then
     echo "This server appears to have an instance of lamassu-server already installed. Installing again is not supported."
     echo
