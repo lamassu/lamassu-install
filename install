@@ -62,7 +62,8 @@ FIG
 echo -e "\nStarting \033[1mlamassu-server\033[0m install. This will take a few minutes...\n"
 
 if [ "$(whoami)" != "root" ]; then
-  echo -e "This script has to be run as \033[1mroot\033[0m user"
+  echo -e "This script has to be run as \033[1mroot\033[0m user."
+  echo
   exit 3
 fi
 
@@ -74,6 +75,18 @@ if [ "$release" != "16.04" ] || [ "$processor" != "x86_64" ]; then
     uname -a
     echo
     echo "Please return to DigitalOcean and create a droplet running Ubuntu 16.04 x64 instead."
+    echo
+    exit 1
+fi
+
+if [ -d "/usr/local/lib/node_modules/lamassu-server/" ]
+then
+    echo "This server appears to have an instance of lamassu-server already installed. Installing again is not supported."
+    echo
+    echo "If you're trying to update, use our upgrade script instead."
+    echo
+    echo "If you're trying to correct an issue, please consult our knowledgebase or contact our support team."
+    echo
     exit 1
 fi
 
