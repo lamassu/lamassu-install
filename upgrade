@@ -54,12 +54,18 @@ n 8 >> ${LOG_FILE} 2>&1
 decho "version installed $(node -v)"
 export NPM_BIN=$(npm -g bin)
 
-decho "updating to lamassu-server (Defiant Dingirma v7.4.9)"
-npm -g install lamassu/lamassu-server#v7.4.9 --unsafe-perm >> ${LOG_FILE} 2>&1
+decho "updating to lamassu-server (Defiant Dingirma v7.4.10)"
+npm -g install lamassu/lamassu-server#v7.4.10 --unsafe-perm >> ${LOG_FILE} 2>&1
 
 decho "rebuilding npm deps"
 cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
 npm rebuild >> ${LOG_FILE} 2>&1
+
+decho "updating system dependencies"
+add-apt-repository -y ppa:ubuntu-toolchain-r/test >> $LOG_FILE 2>&1
+apt update >> $LOG_FILE 2>&1
+apt install -y gcc-4.9 >> $LOG_FILE 2>&1
+apt install -y --only-upgrade libstdc++6 >> $LOG_FILE 2>&1
 
 {
 decho "running migration"
