@@ -69,12 +69,12 @@ fi
 
 release=$(lsb_release -rs)
 processor=$(uname -i)
-if [ "$release" != "16.04" ] || [ "$processor" != "x86_64" ]; then
-    echo "You're attempting to install on an unsupported Linux distribution or release ("$release $processor")."
+if [ "$release" != "20.04" ]; then
+    echo "You're attempting to install on an unsupported Linux distribution or release ("$release")."
     echo
     uname -a
     echo
-    echo "Please return to DigitalOcean and create a droplet running Ubuntu 16.04 x64 instead."
+    echo "Please return to DigitalOcean and create a droplet running Ubuntu 20.04 LTS instead."
     echo
     exit 1
 fi
@@ -97,15 +97,15 @@ chmod 600 /swapfile >> $LOG_FILE 2>&1
 mkswap /swapfile >> $LOG_FILE 2>&1
 swapon /swapfile >> $LOG_FILE 2>&1
 
-IP=$(ifconfig eth0 | grep "inet" | grep -v "inet6" | awk -F: '{print $2}' | awk '{print $1}')
+IP=$(ifconfig eth0 | grep "inet" | grep -v "inet6" | awk '{print $2}')
 
 decho "Updating system..."
 sleep 10
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - >> $LOG_FILE 2>&1
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - >> $LOG_FILE 2>&1
 apt update >> $LOG_FILE 2>&1
 
 decho "Installing necessary packages..."
-apt install nodejs python-minimal build-essential supervisor postgresql libpq-dev -y -q >> $LOG_FILE 2>&1
+apt install nodejs python2-minimal build-essential supervisor postgresql libpq-dev net-tools -y -q >> $LOG_FILE 2>&1
 
 decho "Installing latest npm package manager for node..."
 retry 3 npm -g --unsafe-perm install npm@5  >> $LOG_FILE 2>&1
@@ -113,7 +113,7 @@ NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
 decho "Installing lamassu-server (Defiant Dingirma v7.4.9)..."
-retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#v7.4.9 >> $LOG_FILE 2>&1
+retry 3 npm -g --unsafe-perm install naconner/lamassu-server#node-12 >> $LOG_FILE 2>&1
 
 decho "Generating mnemonic..."
 mkdir -p $MNEMONIC_DIR >> $LOG_FILE 2>&1
@@ -133,6 +133,8 @@ mkdir -p $CONFIG_DIR >> $LOG_FILE 2>&1
 
 decho "Generating SSL certificates..."
 
+sed -i '/RANDFILE/d' /etc/ssl/openssl.cnf
+
 openssl genrsa \
   -out $CA_KEY_PATH \
   4096 >> $LOG_FILE 2>&1
@@ -145,7 +147,7 @@ openssl req \
   -key $CA_KEY_PATH \
   -days 3650 \
   -out $CA_PATH \
-  -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator CA/CN=operator.lamassu.is" \
+  -subj "/C=IS/L=Reykjavik/O=Lamassu Operator CA/CN=operator.lamassu.is" \
   >> $LOG_FILE 2>&1
 
 openssl genrsa \
@@ -155,7 +157,7 @@ openssl genrsa \
 openssl req -new \
   -key $SERVER_KEY_PATH \
   -out /tmp/Lamassu_OP.csr.pem \
-  -subj "/C=IS/ST=/L=Reykjavik/O=Lamassu Operator/CN=$IP" \
+  -subj "/C=IS/L=Reykjavik/O=Lamassu Operator/CN=$IP" \
   -reqexts SAN \
   -sha256 \
   -config <(cat /etc/ssl/openssl.cnf \
