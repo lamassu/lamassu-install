@@ -102,7 +102,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt update >> $LOG_FILE 2>&1
 apt install python2-minimal build-essential supervisor postgresql libpq-dev net-tools -y -q >> $LOG_FILE 2>&1
 sleep 10
-curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - >> $LOG_FILE 2>&1
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash - >> $LOG_FILE 2>&1
 sleep 10
 apt install nodejs -y -q >> $LOG_FILE 2>&1
 
@@ -113,7 +113,7 @@ retry 3 npm -g --unsafe-perm install npm@6  >> $LOG_FILE 2>&1
 NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
-decho "Installing lamassu-server (Defiant Dingirma v7.4.9)..."
+decho "Installing lamassu-server (Defiant Dingirma v7.4.11)..."
 retry 3 npm -g --unsafe-perm install naconner/lamassu-server#node-12 >> $LOG_FILE 2>&1
 
 decho "Generating mnemonic..."
