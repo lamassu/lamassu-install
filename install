@@ -73,7 +73,7 @@ if [ "$release" != "20.04" ]; then
     echo
     uname -a
     echo
-    echo "Please return to DigitalOcean and create a droplet running Ubuntu 20.04 x64 instead."
+    echo "Please return to DigitalOcean and create a droplet running Ubuntu 20.04 (LTS) x64 instead."
     echo
     exit 1
 fi
@@ -235,7 +235,6 @@ decho "Setting up firewall..."
 ufw allow ssh >> $LOG_FILE 2>&1
 ufw allow 443/tcp >> $LOG_FILE 2>&1   # Admin
 ufw allow 3000/tcp >> $LOG_FILE 2>&1  # Server
-ufw allow 8071/tcp >> $LOG_FILE 2>&1  # Lamassu support
 ufw -f enable >> $LOG_FILE 2>&1
 
 decho "Setting up supervisor..."
