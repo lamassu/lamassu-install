@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+set -e
+
+export LOG_FILE=/tmp/update.$(date +"%Y%m%d").log
+
+SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
+UBUNTU_VERSION=$(lsb_release -rs)
+
+rm -f ${LOG_FILE}
+
+decho () {
+  echo `date +"%H:%M:%S"` $1
+  echo `date +"%H:%M:%S"` $1 >> ${LOG_FILE}
+}
+
+checkDpkgLock () {
+  while sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/dev/null 2>&1
+  do
+    echo 'Operating system is using dpkg/apt locks, waiting for their release...'
+    sleep 5
+  done
+}
+
+checkIfRebootNeeded () {
+  if [ -f /var/run/reboot-required ]; then sudo shutdown -r now; fi
+}
+
+checkIfCanContinue () {
+  checkIfRebootNeeded
+  checkDpkgLock
+}
+
+cat <<'FIG'
+ _
+| | __ _ _ __ ___   __ _ ___ ___ _   _       ___  ___ _ ____   _____ _ __
+| |/ _` | '_ ` _ \ / _` / __/ __| | | |_____/ __|/ _ \ '__\ \ / / _ \ '__|
+| | (_| | | | | | | (_| \__ \__ \ |_| |_____\__ \  __/ |   \ V /  __/ |
+|_|\__,_|_| |_| |_|\__,_|___/___/\__,_|     |___/\___|_|    \_/ \___|_|
+FIG
+
+echo -e "\nStarting \033[1mlamassu-server\033[0m update. This will take a few minutes...\n"
+
+if [ "$(whoami)" != "root" ]; then
+  echo -e "This script has to be run as \033[1mroot\033[0m user"
+  exit 3
+fi
+
+# Use a lock file so failed scripts cannot be imediately retried
+# If not the backup created on this script would be replaced
+if ! mkdir /var/lock/lamassu-update; then
+  echo "Script is locked because of a failure." >&2
+  exit 1
+fi
+
+if [ -f /usr/bin/check-upgrade-status ]; then
+  rm -r /usr/bin/check-upgrade-status
+fi
+
+echo "tail -f ~/upgrade.log" > /usr/bin/check-upgrade-status
+sudo chmod +x /usr/bin/check-upgrade-status
+
+if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
+  echo "Detected Ubuntu version: 16.04. Updating to Ubuntu version: 18.04..."
+  echo
+  echo -e "\033[0;33mNOTE: Some of the system's dependencies might require more reboots than expected during this process.\033[0m"
+  echo
+
+  command="/usr/bin/curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-os | bash >> ~/upgrade.log"
+  job="@reboot root sleep 5 | $command"
+  echo "$job" > /etc/cron.d/lamassu-upgrade
+
+  decho "updating to node 14"
+  npm install -g n
+  sudo n 14
+  sudo n which 14
+
+  checkDpkgLock
+  decho "updating to ubuntu 18.04"
+  sudo apt-get update -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
+  checkIfCanContinue
+  sudo DEBIAN_FRONTEND=noninteractive apt-get --with-new-pkgs upgrade -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
+  checkIfCanContinue
+  sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
+  checkIfCanContinue
+  sudo do-release-upgrade -f DistUpgradeViewNonInteractive
+
+  echo
+  echo -e "\033[0;33mUbuntu successfully updated to version 18.04!\033[0m"
+  echo -e "\033[0;33mThe server will now reboot, resuming the update process directly after.\033[0m"
+  echo -e "\033[0;33mDuring this time, paired machines will not be online.\033[0m"
+  echo
+  echo -e "Please wait 10 seconds before logging in, and consult the update process with the following command:"
+  echo -e "\033[0;33mcheck-upgrade-status\033[0m"
+  echo
+  rm -r /var/lock/lamassu-update
+  sudo shutdown -r now
+elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
+  echo "Detected Ubuntu version: 18.04. Updating to Ubuntu version: 20.04..."
+  echo
+  echo -e "\033[0;33mNOTE: Some of the system's dependencies might require more reboots than expected during this process.\033[0m"
+  echo
+
+  command="/usr/bin/curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-os | bash >> ~/upgrade.log"
+  job="@reboot root sleep 5 | $command"
+  echo "$job" > /etc/cron.d/lamassu-upgrade
+
+  checkDpkgLock
+  decho "updating to ubuntu 20.04"
+  sudo apt-get update -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
+  checkIfCanContinue
+  sudo DEBIAN_FRONTEND=noninteractive apt-get --with-new-pkgs upgrade -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
+  checkIfCanContinue
+  sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
+  checkIfCanContinue
+  sudo do-release-upgrade -f DistUpgradeViewNonInteractive
+
+  echo
+  echo -e "\033[0;33mUbuntu successfully updated to version 20.04!\033[0m"
+  echo -e "\033[0;33mThe server will now reboot, allowing you to complete the update process after logging back into its terminal.\033[0m"
+  echo -e "\033[0;33mDuring this time, paired machines will not be online.\033[0m"
+  echo
+  echo -e "Please wait 10 seconds before logging in, and consult the update process with the following command:"
+  echo -e "\033[0;33mcheck-upgrade-status\033[0m"
+  echo
+  rm -r /var/lock/lamassu-update
+  sudo shutdown -r now
+elif [[ "$UBUNTU_VERSION" == "20.04" ]]; then
+  echo "Detected Ubuntu version: 20.04. Your operating system is up-to-date."
+  echo
+  echo "To complete the upgrade, you must now update lamassu-server to the latest release."
+  echo "Your paired machines will be offline until doing so."
+  echo
+  echo "To finalise the upgrade, please run the following command:"
+  echo
+  echo -e "\033[1mcurl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-ls | bash\033[0m"
+  echo
+
+  if [ -f /etc/cron.d/lamassu-upgrade ]; then
+    rm -r /etc/cron.d/lamassu-upgrade
+  fi
+
+else
+  echo -e "\033[0;31mIncompatible Ubuntu version detected ($UBUNTU_VERSION). Make sure that Ubuntu is on one of the following versions: 16.04, 18.04, 20.04.\033[0m"
+fi
+
+rm -r /var/lock/lamassu-update

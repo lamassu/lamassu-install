@@ -35,29 +35,11 @@ if ! mkdir /var/lock/lamassu-update; then
   exit 1
 fi
 
-if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
-  echo "Detected Ubuntu version: 16.04. Executing upgrade script part 1 (you may need to reboot more than once to finish this step)..."
-
-  decho "updating to node 14"
-  npm install -g n
-  sudo n 14
-  sudo n which 14
-
-  decho "updating to ubuntu 18.04"
-  sudo apt-get update -y
-  sudo apt-get --with-new-pkgs upgrade -y
-  sudo apt-get dist-upgrade -y
-  sudo do-release-upgrade -f DistUpgradeViewNonInteractive
-
-  echo "Update part 1 complete! Reboot the server, make sure that Ubuntu is now on version 18.04 and run this script again to execute the second step."
-elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
-  echo "Detected Ubuntu version: 18.04. Executing upgrade script part 2 (you may need to reboot more than once to finish this step)..."
-
-  decho "updating to ubuntu 20.04"
-  sudo apt-get update -y
-  sudo apt-get --with-new-pkgs upgrade -y
-  sudo apt-get dist-upgrade -y
-  sudo do-release-upgrade -f DistUpgradeViewNonInteractive
+if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
+  echo "\033[1mDetected Ubuntu version: 20.04. Your operating system is up to date.\033[0m"
+  echo
+  echo "\033[1mUpdating lamassu-server to Electric Enlil v7.5.0-beta.2...\033[0m"
+  echo
 
   export NPM_BIN=$(npm -g bin)
 
@@ -74,8 +56,8 @@ elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
       mv -v "/usr/lib/node_modules/lamassu-server" "/usr/lib/node_modules/${BKP_NAME}" >> ${LOG_FILE} 2>&1
   fi
 
-  decho "updating lamassu-server to Electric Enlil v7.5.0-beta.0..."
-  npm -g install lamassu/lamassu-server#v7.5.0-beta.0 --unsafe-perm >> ${LOG_FILE} 2>&1
+  decho "updating lamassu-server to Electric Enlil v7.5.0-beta.2..."
+  npm -g install lamassu/lamassu-server#v7.5.0-beta.2 --unsafe-perm >> ${LOG_FILE} 2>&1
 
   decho "rebuilding npm deps"
   cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
@@ -124,14 +106,19 @@ EOF
   chmod -x /etc/update-motd.d/*-motd-news 2>/dev/null
   set -e
 
-  # reset terminal to link new executables
-  hash -r
-
-  rm -r /var/lock/lamassu-update
-
-  echo "Update part 3 complete! Restart the server to complete the process."
-elif [[ "$UBUNTU_VERSION" == "20.04" ]]; then
-  echo "Detected Ubuntu version: 20.04. Your system is up to date."
+  echo
+  echo "\033[1mLamassu server update complete!\033[0m"
+  echo
 else
-  echo "Incompatible Ubuntu version detected ($UBUNTU_VERSION). Make sure that Ubuntu is on one of the following versions: 16.04, 18.04, 20.04."
+  echo
+  echo -e "\033[0;31mOld Ubuntu version detected ($UBUNTU_VERSION). Make sure that Ubuntu is on either version 16.04 or 18.04 and update it.\033[0m"
+  echo "To update this machine's operating system, please run the following command in this machine's terminal:"
+  echo
+  echo -e "\033[1mcurl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-os | bash\033[0m"
+  echo
 fi
+
+# reset terminal to link new executables
+hash -r
+
+rm -r /var/lock/lamassu-update
