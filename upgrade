@@ -57,8 +57,8 @@ if [ -d "/usr/lib/node_modules/lamassu-server" ]; then
     mv -v "/usr/lib/node_modules/lamassu-server" "/usr/lib/node_modules/${BKP_NAME}" >> ${LOG_FILE} 2>&1
 fi
 
-decho "Updating lamassu-server to Electric Enlil v7.5.0-beta.1..."
-npm -g install lamassu/lamassu-server#v7.5.0-beta.1 --unsafe-perm >> ${LOG_FILE} 2>&1
+decho "Updating lamassu-server to Electric Enlil v7.5.0-beta.2..."
+npm -g install lamassu/lamassu-server#v7.5.0-beta.2 --unsafe-perm >> ${LOG_FILE} 2>&1
 
 decho "rebuilding npm deps"
 cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
