@@ -36,9 +36,9 @@ if ! mkdir /var/lock/lamassu-update; then
 fi
 
 if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
-  echo "\033[1mDetected Ubuntu version: 20.04. Your operating system is up to date.\033[0m"
+  echo -e "\033[1mDetected Ubuntu version: 20.04. Your operating system is up to date.\033[0m"
   echo
-  echo "\033[1mUpdating lamassu-server to Electric Enlil v7.5.0-beta.2...\033[0m"
+  echo -e "\033[1mUpdating lamassu-server to Electric Enlil v7.5.0-beta.2...\033[0m"
   echo
 
   export NPM_BIN=$(npm -g bin)
@@ -107,7 +107,7 @@ EOF
   set -e
 
   echo
-  echo "\033[1mLamassu server update complete!\033[0m"
+  echo -e "\033[1mLamassu server update complete!\033[0m"
   echo
 else
   echo
