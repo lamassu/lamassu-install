@@ -39,7 +39,7 @@ checkIfCanContinue () {
 }
 
 updateProgress () {
-  echo "$1" > /tmp/update-process
+  echo "$1" > /tmp/update-progress
 }
 
 cat <<'FIG'
@@ -68,10 +68,12 @@ if [ -f /usr/bin/check-upgrade-status ]; then
   rm -r /usr/bin/check-upgrade-status
 fi
 
-echo "while true
+echo "#!/bin/bash
+
+while true
   do
-    progressNumber = $(< /tmp/update-progress)
-    echo \"Your progress is $1\"
+    progressNumber=$(cat /tmp/update-progress)
+    echo \"Your progress is $progressNumber\"
     sleep 0.5
   done" > /usr/bin/check-upgrade-status
 sudo chmod +x /usr/bin/check-upgrade-status
