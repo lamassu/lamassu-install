@@ -42,15 +42,6 @@ updateProgress () {
   echo "$1" > /tmp/update.progress
 }
 
-progressBar () {
-  while true
-  do
-    progressNumber = $(< /tmp/update.progress)
-    echo "Your progress is $1"
-    sleep 0.5
-  done
-}
-
 cat <<'FIG'
  _
 | | __ _ _ __ ___   __ _ ___ ___ _   _       ___  ___ _ ____   _____ _ __
@@ -77,7 +68,12 @@ if [ -f /usr/bin/check-upgrade-status ]; then
   rm -r /usr/bin/check-upgrade-status
 fi
 
-echo "tail -f ~/upgrade.log" > /usr/bin/check-upgrade-status
+echo "while true
+  do
+    progressNumber = $(< /tmp/update.progress)
+    echo \"Your progress is $1\"
+    sleep 0.5
+  done" > /usr/bin/check-upgrade-status
 sudo chmod +x /usr/bin/check-upgrade-status
 
 if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
