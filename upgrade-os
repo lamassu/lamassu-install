@@ -39,7 +39,7 @@ checkIfCanContinue () {
 }
 
 updateProgress () {
-  echo "$1" > /tmp/update.progress
+  echo "$1" > /tmp/update-process.log
 }
 
 cat <<'FIG'
@@ -57,6 +57,8 @@ if [ "$(whoami)" != "root" ]; then
   exit 3
 fi
 
+updateProgress 0
+
 # Use a lock file so failed scripts cannot be imediately retried
 # If not the backup created on this script would be replaced
 if ! mkdir /var/lock/lamassu-update; then
@@ -70,14 +72,13 @@ fi
 
 echo "while true
   do
-    progressNumber = $(< /tmp/update.progress)
+    progressNumber = $(< /tmp/update-progress.log)
     echo \"Your progress is $1\"
     sleep 0.5
   done" > /usr/bin/check-upgrade-status
 sudo chmod +x /usr/bin/check-upgrade-status
 
 if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
-  updateProgress 0
   echo "Detected Ubuntu version: 16.04. Updating to Ubuntu version: 18.04..."
   echo
   echo -e "\033[0;33mNOTE: Some of the system's dependencies might require more reboots than expected during this process.\033[0m"
