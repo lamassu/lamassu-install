@@ -38,10 +38,6 @@ checkIfCanContinue () {
   checkDpkgLock
 }
 
-updateProgress () {
-  echo "$1" > /tmp/update-progress
-}
-
 cat <<'FIG'
  _
 | | __ _ _ __ ___   __ _ ___ ___ _   _       ___  ___ _ ____   _____ _ __
@@ -68,18 +64,10 @@ if [ -f /usr/bin/check-upgrade-status ]; then
   rm -r /usr/bin/check-upgrade-status
 fi
 
-echo "#!/bin/bash
-
-while true
-  do
-    progressNumber=$(cat /tmp/update-progress)
-    echo \"Your progress is $progressNumber\"
-    sleep 0.5
-  done" > /usr/bin/check-upgrade-status
+echo "tail -n 10 ~/upgrade.log" > /usr/bin/check-upgrade-status
 sudo chmod +x /usr/bin/check-upgrade-status
 
 if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
-  updateProgress 0
   echo "Detected Ubuntu version: 16.04. Updating to Ubuntu version: 18.04..."
   echo
   echo -e "\033[0;33mNOTE: Some of the system's dependencies might require more reboots than expected during this process.\033[0m"
@@ -92,27 +80,21 @@ if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
   command="/usr/bin/curl -sS https://raw.githubusercontent.com/chaotixkilla/lamassu-install/electric-enlil-upgrade/upgrade-os | bash >> ~/upgrade.log"
   job="@reboot root sleep 5 | $command"
   echo "$job" > /etc/cron.d/lamassu-upgrade
-  updateProgress 2
 
   decho "updating to node 14"
   npm install -g n
   sudo n 14
   sudo n which 14
-  updateProgress 5
 
   checkDpkgLock
   decho "updating to ubuntu 18.04"
   sudo apt-get update -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
-  updateProgress 15
   checkIfCanContinue
   sudo DEBIAN_FRONTEND=noninteractive apt-get --with-new-pkgs upgrade -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
-  updateProgress 25
   checkIfCanContinue
   sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
-  updateProgress 35
   checkIfCanContinue
   sudo do-release-upgrade -f DistUpgradeViewNonInteractive
-  updateProgress 48
 
   echo
   echo -e "\033[0;33mUbuntu successfully updated to version 18.04!\033[0m"
@@ -125,7 +107,6 @@ if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
   rm -r /var/lock/lamassu-update
   sudo shutdown -r now
 elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
-  updateProgress 50
   echo "Detected Ubuntu version: 18.04. Updating to Ubuntu version: 20.04..."
   echo
   echo -e "\033[0;33mNOTE: Some of the system's dependencies might require more reboots than expected during this process.\033[0m"
@@ -138,16 +119,12 @@ elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
   checkDpkgLock
   decho "updating to ubuntu 20.04"
   sudo apt-get update -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
-  updateProgress 60
   checkIfCanContinue
   sudo DEBIAN_FRONTEND=noninteractive apt-get --with-new-pkgs upgrade -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
-  updateProgress 75
   checkIfCanContinue
   sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
-  updateProgress 85
   checkIfCanContinue
   sudo do-release-upgrade -f DistUpgradeViewNonInteractive
-  updateProgress 98
 
   echo
   echo -e "\033[0;33mUbuntu successfully updated to version 20.04!\033[0m"
@@ -160,7 +137,6 @@ elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
   rm -r /var/lock/lamassu-update
   sudo shutdown -r now
 elif [[ "$UBUNTU_VERSION" == "20.04" ]]; then
-  updateProgress 100
   echo "Detected Ubuntu version: 20.04. Your operating system is up-to-date."
   echo
   echo "To complete the upgrade, you must now update lamassu-server to the latest release."
