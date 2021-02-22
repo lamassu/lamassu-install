@@ -46,7 +46,7 @@ cat <<'FIG'
 |_|\__,_|_| |_| |_|\__,_|___/___/\__,_|     |___/\___|_|    \_/ \___|_|
 FIG
 
-echo -e "\nStarting \033[1mlamassu-server\033[0m update. This will take a few minutes...\n"
+echo -e "\nStarting \033[1mlamassu-server\033[0m OS update. This will take a while...\n"
 
 if [ "$(whoami)" != "root" ]; then
   echo -e "This script has to be run as \033[1mroot\033[0m user"
@@ -72,7 +72,7 @@ if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
   echo
   echo -e "\033[0;33mNOTE: Some of the system's dependencies might require more reboots than expected during this process.\033[0m"
   echo -e "\033[0;33mThe operating system upgrade process should take around 30 minutes.\033[0m"
-  echo -e "\033[0;33mYou can check the upgrade process at any time, by running the following command:\033[0m"
+  echo -e "\033[0;33mYou can check the upgrade process after the first reboot, by running the following command:\033[0m"
   echo
   echo -e "\033[0;33mcheck-upgrade-status\033[0m"
   echo
