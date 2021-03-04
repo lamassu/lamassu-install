@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
-export LOG_FILE=/tmp/update.$(date +"%Y%m%d").log
+export LOG_FILE=/tmp/upgrade-os.log
 
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 UBUNTU_VERSION=$(lsb_release -rs)
 bold=$(tput bold)
 normal=$(tput sgr0)
-
-rm -f ${LOG_FILE}
 
 decho () {
   echo `date +"%H:%M:%S"` $1
@@ -82,8 +80,9 @@ if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
   echo -e "\033[0;33mDuring this time, your paired machines will be offline.\033[0m"
   echo
   echo -e "\033[0;33mPlease pay attention in a few minutes to the end of the following output for next steps to take.\033[0m"
+  echo
 
-  command="/usr/bin/curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-os | bash >> ~/upgrade.log"
+  command="/usr/bin/curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-os | bash >> ${LOG_FILE}"
   job="@reboot root sleep 5 | $command"
   echo "$job" > /etc/cron.d/lamassu-upgrade
 
@@ -104,10 +103,14 @@ if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
 
   echo
   echo -e "\033[0;33mUbuntu successfully updated to version 18.04!\033[0m"
-  echo -e "\033[0;33mThe server will now reboot, resuming the update process directly after.\033[0m"
+  echo
+  echo -e "\033[0;33mThe server will now reboot, resuming the update process directly afterwards.\033[0m"
   echo -e "\033[0;33mDuring this time, paired machines will not be online.\033[0m"
   echo
-  echo -e "Please wait 10 seconds before logging in, and consult the update process with the following command:"
+  echo -e "\033[0;33mPlease wait ${bold}30 minutes${normal} before logging back into your server's terminal.\033[0m"
+  echo 
+  echo -e "\033[0;33mAfter logging in, consult the update process and the ${bold}required next step${normal} with the following command:\033[0m"
+  echo 
   echo -e "\033[0;33mcheck-upgrade-status\033[0m"
   echo
   rm -r /var/lock/lamassu-update
@@ -118,7 +121,7 @@ elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
   echo -e "\033[0;33mNOTE: Some of the system's dependencies might require more reboots than expected during this process.\033[0m"
   echo
 
-  command="/usr/bin/curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-os | bash >> ~/upgrade.log"
+  command="/usr/bin/curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-os | bash >> ${LOG_FILE}"
   job="@reboot root sleep 5 | $command"
   echo "$job" > /etc/cron.d/lamassu-upgrade
 
@@ -134,15 +137,20 @@ elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
 
   echo
   echo -e "\033[0;33mUbuntu successfully updated to version 20.04!\033[0m"
-  echo -e "\033[0;33mThe server will now reboot, allowing you to complete the update process after logging back into its terminal.\033[0m"
+  echo
+  echo -e "\033[0;33mThe server will now reboot, resuming the update process directly afterwards.\033[0m"
   echo -e "\033[0;33mDuring this time, paired machines will not be online.\033[0m"
   echo
-  echo -e "Please wait 10 seconds before logging in, and consult the update process with the following command:"
+  echo -e "\033[0;33mPlease wait ${bold}30 minutes${normal} before logging back into your server's terminal.\033[0m"
+  echo 
+  echo -e "\033[0;33mAfter logging in, consult the update process and the ${bold}required next step${normal} with the following command:\033[0m"
+  echo 
   echo -e "\033[0;33mcheck-upgrade-status\033[0m"
   echo
   rm -r /var/lock/lamassu-update
   sudo shutdown -r now
 elif [[ "$UBUNTU_VERSION" == "20.04" ]]; then
+  echo
   echo "Detected Ubuntu version: 20.04. Your operating system is up-to-date."
   echo
   echo "To complete the upgrade, you must now update lamassu-server to the latest release."
