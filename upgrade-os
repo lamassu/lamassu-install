@@ -28,9 +28,9 @@ checkIfRebootNeeded () {
     echo -e "\033[0;33mThe server will now reboot, resuming the update process directly afterwards.\033[0m"
     echo -e "\033[0;33mDuring this time, paired machines will not be online.\033[0m"
     echo
-    echo -e "\033[0;33mPlease wait ${bold}30 minutes${normal} before logging back into your server's terminal.\033[0m"
+    echo -e "\033[0;33mPlease wait ${bold}30 minutes${normal}\033[0;33m before logging back into your server's terminal.\033[0m"
     echo 
-    echo -e "\033[0;33mAfter logging in, consult the update process and the ${bold}required next step${normal} with the following command:\033[0m"
+    echo -e "\033[0;33mAfter logging in, consult the update process and the ${bold}required next step${normal}\033[0;33m with the following command:\033[0m"
     echo 
     echo -e "\033[0;33mcheck-upgrade-status\033[0m"
     echo 
@@ -75,7 +75,7 @@ sudo chmod +x /usr/bin/check-upgrade-status
 if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
   echo "Detected Ubuntu version: 16.04. Updating to Ubuntu version: 18.04..."
   echo
-  echo -e "\033[0;33mThe server operating system upgrade should take around ${bold}30 minutes${normal} total.\033[0m"
+  echo -e "\033[0;33mThe server operating system upgrade should take around ${bold}30 minutes${normal}\033[0;33m total.\033[0m"
   echo
   echo -e "\033[0;33mDuring this time, your paired machines will be offline.\033[0m"
   echo
@@ -107,9 +107,9 @@ if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
   echo -e "\033[0;33mThe server will now reboot, resuming the update process directly afterwards.\033[0m"
   echo -e "\033[0;33mDuring this time, paired machines will not be online.\033[0m"
   echo
-  echo -e "\033[0;33mPlease wait ${bold}30 minutes${normal} before logging back into your server's terminal.\033[0m"
+  echo -e "\033[0;33mPlease wait ${bold}30 minutes${normal}\033[0;33m before logging back into your server's terminal.\033[0m"
   echo 
-  echo -e "\033[0;33mAfter logging in, consult the update process and the ${bold}required next step${normal} with the following command:\033[0m"
+  echo -e "\033[0;33mAfter logging in, consult the update process and the ${bold}required next step${normal}\033[0;33m with the following command:\033[0m"
   echo 
   echo -e "\033[0;33mcheck-upgrade-status\033[0m"
   echo
@@ -141,9 +141,9 @@ elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
   echo -e "\033[0;33mThe server will now reboot, resuming the update process directly afterwards.\033[0m"
   echo -e "\033[0;33mDuring this time, paired machines will not be online.\033[0m"
   echo
-  echo -e "\033[0;33mPlease wait ${bold}30 minutes${normal} before logging back into your server's terminal.\033[0m"
+  echo -e "\033[0;33mPlease wait ${bold}30 minutes${normal}\033[0;33m before logging back into your server's terminal.\033[0m"
   echo 
-  echo -e "\033[0;33mAfter logging in, consult the update process and the ${bold}required next step${normal} with the following command:\033[0m"
+  echo -e "\033[0;33mAfter logging in, consult the update process and the ${bold}required next step${normal}\033[0;33m with the following command:\033[0m"
   echo 
   echo -e "\033[0;33mcheck-upgrade-status\033[0m"
   echo
