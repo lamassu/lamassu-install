@@ -68,7 +68,7 @@ if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
   echo -e "\033[0;33mNOTE: Some of the system's dependencies might require more reboots than expected during this process.\033[0m"
   echo
 
-  command="/usr/bin/curl -sS https://raw.githubusercontent.com/chaotixkilla/lamassu-install/fix-electric-enlil-upgrade/upgrade-os | bash >> ~/upgrade.log"
+  command="/usr/bin/curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-os | bash >> ~/upgrade.log"
   job="@reboot root sleep 5 | $command"
   echo "$job" > /etc/cron.d/lamassu-upgrade
 
@@ -106,7 +106,7 @@ elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
   echo -e "\033[0;33mNOTE: Some of the system's dependencies might require more reboots than expected during this process.\033[0m"
   echo
 
-  command="/usr/bin/curl -sS https://raw.githubusercontent.com/chaotixkilla/lamassu-install/fix-electric-enlil-upgrade/upgrade-os | bash >> ~/upgrade.log"
+  command="/usr/bin/curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-os | bash >> ~/upgrade.log"
   job="@reboot root sleep 5 | $command"
   echo "$job" > /etc/cron.d/lamassu-upgrade
 
