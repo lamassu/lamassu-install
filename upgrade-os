@@ -18,9 +18,9 @@ checkIfRebootNeeded () {
     echo -e "\033[0;33mThe server will now reboot, resuming the update process directly afterwards.\033[0m"
     echo -e "\033[0;33mDuring this time, paired machines will not be online.\033[0m"
     echo
-    echo -e "Please wait 30 minutes before logging back into your server's terminal."
+    echo -e "\033[0;33mPlease wait 30 minutes before logging back into your server's terminal.\033[0m"
     echo
-    echo -e "After logging in, consult the update process and the required next step with the following command:"
+    echo -e "\033[0;33mAfter logging in, consult the update process and the required next step with the following command:\033[0m"
     echo
     echo -e "\033[0;33mcheck-upgrade-status\033[0m"
     echo
@@ -72,13 +72,13 @@ if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
   job="@reboot root sleep 5 | $command"
   echo "$job" > /etc/cron.d/lamassu-upgrade
 
-  echo "updating to node 14"
+  echo -e "\033[0;33mupdating to node 14\033[0m"
   npm install -g n
   sudo n 14
   sudo n which 14
 
   checkDpkgLock
-  echo "updating to ubuntu 18.04"
+  echo -e "\033[0;33mupdating to ubuntu 18.04\033[0m"
   sudo apt-get update -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
   checkIfCanContinue
   sudo DEBIAN_FRONTEND=noninteractive apt-get --with-new-pkgs upgrade -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
@@ -111,7 +111,7 @@ elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
   echo "$job" > /etc/cron.d/lamassu-upgrade
 
   checkDpkgLock
-  echo "updating to ubuntu 20.04"
+  echo -e "\033[0;33mupdating to ubuntu 20.04\033[0m"
   sudo apt-get update -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
   checkIfCanContinue
   sudo DEBIAN_FRONTEND=noninteractive apt-get --with-new-pkgs upgrade -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
@@ -125,9 +125,9 @@ elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
   echo -e "\033[0;33mThe server will now reboot, resuming the update process directly afterwards.\033[0m"
   echo -e "\033[0;33mDuring this time, paired machines will not be online.\033[0m"
   echo
-  echo -e "Please wait 30 minutes before logging back into your server's terminal."
+  echo -e "\033[0;33mPlease wait 30 minutes before logging back into your server's terminal.\033[0m"
   echo
-  echo -e "After logging in, consult the update process and the required next step with the following command:"
+  echo -e "\033[0;33mAfter logging in, consult the update process and the required next step with the following command:\033[0m"
   echo
   echo -e "\033[0;33mcheck-upgrade-status\033[0m"
   echo
@@ -136,10 +136,10 @@ elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
 elif [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   echo "Detected Ubuntu version: 20.04. Your operating system is up-to-date."
   echo
-  echo "To complete the upgrade, you must now update lamassu-server to the latest release."
-  echo "Your paired machines will be offline until doing so."
+  echo -e "\033[0;33mTo complete the upgrade, you must now update lamassu-server to the latest release.\033[0m"
+  echo -e "\033[0;33mYour paired machines will be offline until doing so.\033[0m"
   echo
-  echo "To finalise the upgrade, please run the following command:"
+  echo -e "\033[0;33mTo finalise the upgrade, please run the following command:\033[0m"
   echo
   echo -e "\033[1mcurl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-ls | bash\033[0m"
   echo
