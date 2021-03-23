@@ -109,8 +109,8 @@ IP=$(ifconfig eth0 | grep "inet" | grep -v "inet6" | awk '{print $2}')
 NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
-decho "Installing lamassu-server (Electric Enlil v7.5.0-beta.2)..."
-retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#v7.5.0-beta.2 >> $LOG_FILE 2>&1
+decho "Installing lamassu-server (Electric Enlil v7.5.0-beta.3)..."
+retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#v7.5.0-beta.3 >> $LOG_FILE 2>&1
 
 decho "Generating mnemonic..."
 mkdir -p $MNEMONIC_DIR >> $LOG_FILE 2>&1
