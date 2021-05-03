@@ -33,6 +33,23 @@ checkIfCanContinue () {
   checkDpkgLock
 }
 
+addPackageSources () {
+  if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
+    if ! mkdir /var/lock/xenial-upgrade; then
+      echo "Xenial package sources already added." >&2
+    else
+      echo "deb http://archive.ubuntu.com/ubuntu/ xenial main universe multiverse" >> /etc/apt/sources.list
+      echo "deb http://archive.ubuntu.com/ubuntu/ xenial-security main universe multiverse" >> /etc/apt/sources.list
+    fi
+  elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
+    if ! mkdir /var/lock/bionic-upgrade; then
+      echo "Bionic package sources already added." >&2
+    else
+      echo "deb http://archive.ubuntu.com/ubuntu/ bionic-updates main restricted" >> /etc/apt/sources.list
+    fi
+  fi
+}
+
 cat <<'FIG'
  _
 | | __ _ _ __ ___   __ _ ___ ___ _   _       ___  ___ _ ____   _____ _ __
@@ -61,6 +78,8 @@ fi
 
 echo "tail -n 10 ~/upgrade.log" > /usr/bin/check-upgrade-status
 sudo chmod +x /usr/bin/check-upgrade-status
+
+addPackageSources
 
 if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
   echo "Detected Ubuntu version: 16.04. Updating to Ubuntu version: 18.04..."
@@ -99,6 +118,7 @@ if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
   echo -e "\033[0;33mcheck-upgrade-status\033[0m"
   echo
   rm -r /var/lock/lamassu-update
+  rm -r /var/lock/xenial-upgrade
   sudo shutdown -r now
 elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
   echo "Detected Ubuntu version: 18.04. Updating to Ubuntu version: 20.04..."
@@ -132,6 +152,7 @@ elif [[ "$UBUNTU_VERSION" == "18.04" ]]; then
   echo -e "\033[0;33mcheck-upgrade-status\033[0m"
   echo
   rm -r /var/lock/lamassu-update
+  rm -r /var/lock/bionic-upgrade
   sudo shutdown -r now
 elif [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   echo "Detected Ubuntu version: 20.04. Your operating system is up-to-date."
