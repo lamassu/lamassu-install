@@ -284,7 +284,7 @@ hash -r
 mkdir /mnt/blockchains/
 
 # tmp workaround
-curl -#o $(npm root -g)/lamassu-server/lib/blockchain/common.js https://raw.githubusercontent.com/lamassu/lamassu-server/v7.5.0/lib/blockchain/common.js
+sed -i 's/0.21.1/0.20.1/g' $(npm root -g)/lamassu-server/lib/blockchain/common.js
 
 echo
 decho "Done! Now it's time to configure Lamassu stack."
