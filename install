@@ -283,6 +283,9 @@ hash -r
 # create /mnt/blockchains to obviate block volume
 mkdir /mnt/blockchains/
 
+# tmp workaround
+sed -i 's/0.21.1/0.20.1/g' $(npm root -g)/lamassu-server/lib/blockchain/common.js
+
 echo
 decho "Done! Now it's time to configure Lamassu stack."
 echo
