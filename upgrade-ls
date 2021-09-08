@@ -123,7 +123,7 @@ fi
 echo
 echo "Updating installed wallet nodes."
 echo
-lamassu-update-nodes >> ${LOG_FILE} 2>&1
+lamassu-update-wallet-nodes >> ${LOG_FILE} 2>&1
 
 # reset terminal to link new executables
 hash -r
