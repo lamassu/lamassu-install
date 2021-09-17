@@ -60,6 +60,22 @@ cat <<'FIG'
 |_|\__,_|_| |_| |_|\__,_|___/___/\__,_|     |___/\___|_|    \_/ \___|_|
 FIG
 
+echo
+
+while :
+do
+  read -p "Before starting, please insert your email for further registration: " email
+  if [ -z "$email" ]
+  then
+    echo -e 'Email cannot be blank, please try again.'
+  elif ! [[ "$email" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$ ]]
+  then 
+    echo -e "Invalid email format, please try again."
+  else 
+    break
+  fi
+done
+
 echo -e "\nStarting \033[1mlamassu-server\033[0m install. This will take a few minutes...\n"
 
 if [ "$(whoami)" != "root" ]; then
