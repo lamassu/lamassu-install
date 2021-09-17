@@ -236,7 +236,7 @@ decho "Setting up database tables..."
 lamassu-migrate >> $LOG_FILE 2>&1
 
 decho "Setting up lamassu-admin..."
-ADMIN_REGISTRATION_URL=`lamassu-register admin 2>> $LOG_FILE`
+ADMIN_REGISTRATION_URL=`lamassu-register $email superuser 2>> $LOG_FILE`
 
 decho "Setting up backups..."
 BIN=$(npm -g bin)
