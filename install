@@ -244,6 +244,8 @@ autostart=true
 autorestart=true
 stderr_logfile=/var/log/supervisor/lamassu-server.err.log
 stdout_logfile=/var/log/supervisor/lamassu-server.out.log
+stderr_logfile_backups=2
+stdout_logfile_backups=2
 environment=HOME="/root"
 EOF
 
@@ -254,6 +256,8 @@ autostart=true
 autorestart=true
 stderr_logfile=/var/log/supervisor/lamassu-admin-server.err.log
 stdout_logfile=/var/log/supervisor/lamassu-admin-server.out.log
+stderr_logfile_backups=2
+stdout_logfile_backups=2
 environment=HOME="/root"
 EOF
 
