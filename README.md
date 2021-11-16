@@ -19,5 +19,5 @@ If you're coming from our previous major release, use the server and admin [**up
 If you're already on v7.5, run the following in your droplet's terminal to upgrade to the [**latest release**](https://github.com/lamassu/lamassu-server/releases):
 
 ```
-curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-ls | bash
+curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/tejo/upgrade-ls | bash
 ```
