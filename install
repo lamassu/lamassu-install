@@ -126,8 +126,8 @@ IP=$(ifconfig eth0 | grep "inet" | grep -v "inet6" | awk '{print $2}')
 NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
-decho "Installing lamassu-server (Forsaken Fiat v8.0.0-beta.4)..."
-retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#v8.0.0-beta.4 >> $LOG_FILE 2>&1
+decho "Installing lamassu-server (feat-decouple-l-s-entrypoint)..."
+retry 3 npm -g --unsafe-perm install chaotixkilla/lamassu-server#feat-decouple-l-s-entrypoint >> $LOG_FILE 2>&1
 
 decho "Generating mnemonic..."
 mkdir -p $MNEMONIC_DIR >> $LOG_FILE 2>&1
@@ -197,40 +197,7 @@ cp $LAMASSU_CA_FILE $LAMASSU_CA_PATH
 
 mkdir -p $OFAC_DATA_DIR
 
-cat <<EOF > $CONFIG_DIR/lamassu.json
-{
-  "postgresql": "postgres://lamassu_pg:$POSTGRES_PW@localhost/lamassu",
-  "mnemonicPath": "$MNEMONIC_FILE",
-  "lamassuCaPath": "$LAMASSU_CA_PATH",
-  "caPath": "$CA_PATH",
-  "certPath": "$SERVER_CERT_PATH",
-  "keyPath": "$SERVER_KEY_PATH",
-  "hostname": "$IP",
-  "logLevel": "info",
-  "migrateStatePath": "$MIGRATE_STATE_PATH",
-  "blockchainDir": "$BLOCKCHAIN_DIR",
-  "ofacDataDir": "$OFAC_DATA_DIR",
-  "idPhotoCardDir": "$ID_PHOTO_CARD_DIR",
-  "frontCameraDir": "$FRONTCAMERA_DIR",
-  "operatorDataDir": "$OPERATOR_DIR",
-  "strike": {
-    "baseUrl": "https://api.strike.acinq.co/api/"
-  },
-  "coinAtmRadar": {
-    "url": "https://coinatmradar.info/api/lamassu/"
-  },
-  "ofacSources": [
-    {
-      "name": "sdn_advanced",
-      "url": "https://www.treasury.gov/ofac/downloads/sanctions/1.0/sdn_advanced.xml"
-    },
-    {
-      "name": "cons_advanced",
-      "url": "https://www.treasury.gov/ofac/downloads/sanctions/1.0/cons_advanced.xml"
-    }
-  ]
-}
-EOF
+node $NODE_MODULES/lamassu-server/tools/build-prod-env.js --db-password $POSTGRES_PW --hostname $IP
 
 decho "Setting up database tables..."
 lamassu-migrate >> $LOG_FILE 2>&1
