@@ -109,6 +109,14 @@ EOF
   echo
   echo -e "\033[1mLamassu server update complete!\033[0m"
   echo
+
+  # update installed wallet nodes
+
+  lamassu-update-wallet-nodes >> ${LOG_FILE} 2>&1
+
+  echo
+  echo "Updated wallet nodes!"
+  echo
 else
   echo
   echo -e "\033[0;31mOld Ubuntu version detected ($UBUNTU_VERSION). Make sure that Ubuntu is on either version 16.04 or 18.04 and update it.\033[0m"
@@ -117,14 +125,6 @@ else
   echo -e "\033[1mcurl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-os | bash\033[0m"
   echo
 fi
-
-# update installed wallet nodes
-
-lamassu-update-wallet-nodes >> ${LOG_FILE} 2>&1
-
-echo
-echo "Updated wallet nodes!"
-echo
 
 # reset terminal to link new executables
 hash -r
