@@ -106,6 +106,14 @@ EOF
   chmod -x /etc/update-motd.d/*-motd-news 2>/dev/null
   set -e
 
+  # update installed wallet nodes
+
+  echo
+  echo "Updating installed wallet nodes."
+  echo
+
+  lamassu-update-wallet-nodes >> ${LOG_FILE} 2>&1
+
   echo
   echo -e "\033[1mLamassu server update complete!\033[0m"
   echo
