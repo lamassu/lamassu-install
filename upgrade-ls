@@ -85,9 +85,9 @@ port = 127.0.0.1:9001
 EOF
 
   decho "updating lamassu-server"
-  supervisorctl update lamassu-server >> ${LOG_FILE} 2>&1
-  supervisorctl update lamassu-admin-server >> ${LOG_FILE} 2>&1
-  supervisorctl reload >> ${LOG_FILE} 2>&1
+  supervisorctl update >> ${LOG_FILE} 2>&1
+  supervisorctl start lamassu-server >> ${LOG_FILE} 2>&1
+  supervisorctl start lamassu-admin-server >> ${LOG_FILE} 2>&1
 
   decho "updating backups conf"
   BACKUP_CMD=${NPM_BIN}/lamassu-backup-pg
