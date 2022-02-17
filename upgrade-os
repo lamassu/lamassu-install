@@ -82,7 +82,6 @@ sudo chmod +x /usr/bin/check-upgrade-status
 addPackageSources
 
 supervisorctl stop lamassu-server lamassu-admin-server
-supervisorctl remove lamassu-server lamassu-admin-server
 
 if [[ "$UBUNTU_VERSION" == "16.04" ]]; then
   echo "Detected Ubuntu version: 16.04. Updating to Ubuntu version: 18.04..."
