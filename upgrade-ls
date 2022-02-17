@@ -47,7 +47,7 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   supervisorctl stop lamassu-server >> ${LOG_FILE} 2>&1
   supervisorctl stop lamassu-admin-server >> ${LOG_FILE} 2>&1
 
-  decho "unlinking ${NPM_BIN}/lamassu* old executables"
+  decho "unlinking old executables"
   find ${NPM_BIN} -type l \( -name "lamassu-*" -or -name "hkdf" \) -exec rm -fv {} \; >> ${LOG_FILE} 2>&1
 
   if [ -d "/usr/lib/node_modules/lamassu-server" ]; then
@@ -105,12 +105,7 @@ EOF
   chmod -x /etc/update-motd.d/*-motd-news 2>/dev/null
   set -e
 
-  # update installed wallet nodes
-
-  echo
-  echo "Updating installed wallet nodes."
-  echo
-
+  decho "updating installed wallet nodes"
   lamassu-update-wallet-nodes >> ${LOG_FILE} 2>&1
 
   echo
