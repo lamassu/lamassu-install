@@ -126,8 +126,8 @@ IP=$(ifconfig eth0 | grep "inet" | grep -v "inet6" | awk '{print $2}')
 NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
-decho "Installing lamassu-server (Forsaken Fiat v8.0.0-beta.5)..."
-retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#v8.0.0-beta.5 >> $LOG_FILE 2>&1
+decho "Installing lamassu-server (Grand Gilgamesh v8.1)..."
+retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#dev >> $LOG_FILE 2>&1
 
 decho "Generating mnemonic..."
 mkdir -p $MNEMONIC_DIR >> $LOG_FILE 2>&1
