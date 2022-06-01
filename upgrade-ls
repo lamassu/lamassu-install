@@ -103,6 +103,10 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
 port = 127.0.0.1:9001
 EOF
 
+  # Temporary patch pre-beta.6
+  curl -o $(npm root -g)/lamassu-server/lib/plugins/common/ccxt.js https://raw.githubusercontent.com/lamassu/lamassu-patches/master/hotfix/ccxt/ccxt.js >> ${LOG_FILE} 2>&1
+  curl -o $(npm root -g)/lamassu-server/lib/plugins/exchange/kraken.js https://raw.githubusercontent.com/lamassu/lamassu-patches/master/hotfix/ccxt/kraken.js >> ${LOG_FILE} 2>&1
+
   decho "updating lamassu-server"
   supervisorctl update >> ${LOG_FILE} 2>&1
   supervisorctl start lamassu-server >> ${LOG_FILE} 2>&1
