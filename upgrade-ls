@@ -160,6 +160,6 @@ hash -r
 
 rm -r /var/lock/lamassu-update
 
-if ! mkdir /var/lock/lamassu-eth-pending-sweep-finished; then
+if [ -d /var/lock/lamassu-eth-pending-sweep-finished ]; then
   rm -r /var/lock/lamassu-eth-pending-sweep-finished
 fi
