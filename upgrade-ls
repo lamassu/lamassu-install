@@ -61,16 +61,17 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
       CONNECTION_STRING=$(echo "${CONNECTION_STRING_TEMP/psql/"postgresql"}")
 
       FIRST_FF_MIGRATION_TIME=$(psql -d $CONNECTION_STRING -Atc "SELECT value->>'timestamp' FROM migrations m, json_array_elements(m.data->'migrations') obj WHERE obj->>'title' = '1603804834628-add-last-accessed-tokens.js';")
-      FIRST_ETH_TX_TIME=$(psql -d $CONNECTION_STRING -Atc "SELECT EXTRACT(EPOCH FROM created) * 1000 FROM (SELECT id, crypto_code, created FROM cash_in_txs UNION SELECT id, crypto_code, created FROM cash_out_txs) txs ORDER BY created ASC LIMIT 1;")
+      FIRST_ETH_TX_TIME=$(psql -d $CONNECTION_STRING -Atc "SELECT EXTRACT(EPOCH FROM created) * 1000 FROM (SELECT id, crypto_code, created FROM cash_in_txs UNION SELECT id, crypto_code, created FROM cash_out_txs) txs WHERE txs.crypto_code = 'ETH' ORDER BY created ASC LIMIT 1;")
 
-      if [ $FIRST_ETH_TX_TIME \> $FIRST_FF_MIGRATION_TIME ]; then
+      if [ -z "${FIRST_ETH_TX_TIME}" ]; then
+        : # no-op, continue the upgrade
+      elif [ $FIRST_ETH_TX_TIME \> $FIRST_FF_MIGRATION_TIME ]; then
         echo -e "\033[0;31mEthereum was detected to be used in a transaction for the first time after the 8.0 upgrade. In order to continue the upgrade, please contact support and try again later\033[0m"
         curl -o $(npm root -g)/lamassu-server/bin/lamassu-eth-sweep-to-new-wallet https://raw.githubusercontent.com/chaotixkilla/lamassu-server/feat-add-script-sweep-to-new-wallet-web3-0.20/bin/lamassu-eth-sweep-to-new-wallet >> ${LOG_FILE} 2>&1
         rm -r /var/lock/lamassu-update
         exit 1
-      else
-        rm -r /var/lock/lamassu-eth-pending-sweep
       fi
+      rm -r /var/lock/lamassu-eth-pending-sweep
     fi
   fi
 
