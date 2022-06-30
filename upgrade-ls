@@ -46,9 +46,11 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
 
   # Check if ETH was transacted for the first time before 8.0
   SERVER_RELEASE=$(node -p -e "require('$(npm root -g)/lamassu-server/package.json').version")
-  REQUIRED_RELEASE=8.0.0-beta.5
 
-  if [ $(printf "%s\n" "$SERVER_RELEASE" "$REQUIRED_RELEASE" | sort -V | head -1) = "$SERVER_RELEASE" ]
+  if [ $(printf "%s\n" "$SERVER_RELEASE" "8.0.0" | sort -V | head -1) = "$SERVER_RELEASE" ] || [ "$SERVER_RELEASE" = "8.0.0-beta.6" ]
+  then
+    : # no-op, ETH issue is fixed or never occurred when on these versions. sort -V considers 8.0.0 < 8.0.0-beta.X, hence the extra check
+  elif [ $(printf "%s\n" "$SERVER_RELEASE" "8.0.0-beta.5" | sort -V | head -1) = "$SERVER_RELEASE" ]
   then
     if [ -d /var/lock/lamassu-eth-pending-sweep-finished ]; then
       : # no-op, continue the upgrade
