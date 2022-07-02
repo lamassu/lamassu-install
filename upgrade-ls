@@ -91,6 +91,7 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   fi
 
   decho "updating lamassu-server to Forsaken Fiat v8.0.0..."
+  echo "NOTE: This portion can take upward of 20 minutes to complete. Leave this running until you see subsequent messages..."
   npm -g install lamassu/lamassu-server#v8.0.0 --unsafe-perm >> ${LOG_FILE} 2>&1
 
   decho "rebuilding npm deps"
