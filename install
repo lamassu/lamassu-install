@@ -125,12 +125,11 @@ IP=$(ifconfig eth0 | grep "inet" | grep -v "inet6" | awk '{print $2}')
 NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
-decho "Installing lamassu-server (release-8.1)..."
-retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#release-8.1 >> $LOG_FILE 2>&1
+decho "Installing lamassu-server (Grand Gilgamesh v8.1.0)..."
+curl -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0/lamassu-server-v8.1.0.tar.gz | sudo tar -xz -C $NODE_MODULES/ >> $LOG_FILE 2>&1
 
-# Temporary patch pre-beta.6
-curl -o $(npm root -g)/lamassu-server/lib/plugins/common/ccxt.js https://raw.githubusercontent.com/lamassu/lamassu-patches/master/hotfix/ccxt/ccxt.js >> ${LOG_FILE} 2>&1
-curl -o $(npm root -g)/lamassu-server/lib/plugins/exchange/kraken.js https://raw.githubusercontent.com/lamassu/lamassu-patches/master/hotfix/ccxt/kraken.js >> ${LOG_FILE} 2>&1
+decho "Creating symlinks..."
+cp --symbolic-link $NODE_MODULES/lamassu-server/bin/* $NPM_BIN/ >> $LOG_FILE 2>&1
 
 decho "Generating mnemonic..."
 mkdir -p $MNEMONIC_DIR >> $LOG_FILE 2>&1
