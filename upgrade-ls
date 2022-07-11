@@ -36,9 +36,10 @@ if ! mkdir /var/lock/lamassu-update; then
 fi
 
 if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
+  OLD_SERVER_VERSION=$(node -p -e "require('$(npm root -g)/lamassu-server/package.json').version")
   echo -e "\033[1mDetected Ubuntu version: 20.04. Your operating system is up to date.\033[0m"
   echo
-  echo -e "\033[1mUpdating lamassu-server to Forsaken Fiat v8.0.0-beta.4...\033[0m"
+  echo -e "\033[1mUpdating lamassu-server to Grand Gilgamesh v8.1...\033[0m"
   echo
 
   export NPM_BIN=$(npm -g bin)
@@ -57,11 +58,26 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   fi
 
   decho "updating lamassu-server to Grand Gilgamesh v8.1..."
-  npm -g install lamassu/lamassu-server#dev --unsafe-perm >> ${LOG_FILE} 2>&1
+  npm -g install lamassu/lamassu-server#release-8.1 --unsafe-perm >> ${LOG_FILE} 2>&1
 
   decho "rebuilding npm deps"
   cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
   npm rebuild >> ${LOG_FILE} 2>&1
+
+  CONFIG_DIR=/etc/lamassu
+  decho "rebuilding environment..."
+  if [ $(printf "%s\n" "$OLD_SERVER_VERSION" "8.1.0" | sort -V | head -1) = "8.1.0" ]
+  then
+    # When OLD_SERVER_VERSION >= 8.1.0, there's a .env file, so POSTGRES_PW and IP will need to be retrieved from the .env file
+    ENV_POSTGRES_PW=$(cat $CONFIG_DIR/.env | grep POSTGRES_PASSWORD= | cut -d '=' -f2)
+    ENV_HOSTNAME=$(cat $CONFIG_DIR/.env | grep HOSTNAME= | cut -d '=' -f2)
+    node $NODE_MODULES/lamassu-server/tools/build-prod-env.js --db-password $ENV_POSTGRES_PW --hostname $ENV_HOSTNAME
+  else
+    # When OLD_SERVER_VERSION < 8.1.0, there's no .env file, so POSTGRES_PW and IP will need to be retrieved from the options file
+    OPTIONS_POSTGRES_PW=$(grep -oP '(?<="postgresql": ")[^"]*' $CONFIG_DIR/lamassu.json | sed -nr 's/.*:(.*)@.*/\1/p')
+    OPTIONS_HOSTNAME=$(grep -oP '(?<="hostname": ")[^"]*' $CONFIG_DIR/lamassu.json)
+    node $NODE_MODULES/lamassu-server/tools/build-prod-env.js --db-password $OPTIONS_POSTGRES_PW --hostname $OPTIONS_HOSTNAME
+  fi
 
   decho "migrating config"
   lamassu-migrate-config >> ${LOG_FILE} 2>&1
