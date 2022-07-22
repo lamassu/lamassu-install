@@ -64,6 +64,7 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
   npm rebuild >> ${LOG_FILE} 2>&1
 
+  NODE_MODULES=$(npm -g root)
   CONFIG_DIR=/etc/lamassu
   decho "rebuilding environment..."
   if [ $(printf "%s\n" "$OLD_SERVER_VERSION" "8.1.0" | sort -V | head -1) = "8.1.0" ]
