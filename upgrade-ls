@@ -39,7 +39,11 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   OLD_SERVER_VERSION=$(node -p -e "require('$(npm root -g)/lamassu-server/package.json').version")
   echo -e "\033[1mDetected Ubuntu version: 20.04. Your operating system is up to date.\033[0m"
   echo
+<<<<<<< HEAD
   echo -e "\033[1mUpdating lamassu-server to Grand Gilgamesh v8.1...\033[0m"
+=======
+  echo -e "\033[1mUpdating lamassu-server to Forsaken Fiat v8.0.1...\033[0m"
+>>>>>>> feat: use v8.0.1 (#98)
   echo
 
   export NPM_BIN=$(npm -g bin)
