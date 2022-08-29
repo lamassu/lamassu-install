@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+trap 'rm -f /var/lock/lamassu-update' EXIT
+
 export LOG_FILE=/tmp/update.$(date +"%Y%m%d").log
 
 if [[ -z "${NODE_ENV}" ]]; then
