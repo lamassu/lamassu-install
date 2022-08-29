@@ -3,7 +3,8 @@ set -e
 
 trap 'rm -f /var/lock/lamassu-update' EXIT
 
-export LOG_FILE=/tmp/update.$(date +"%Y%m%d").log
+timestamp=$(date +'%Y%m%d%H%M%S')
+export LOG_FILE=/tmp/update.${timestamp}.log
 
 if [[ -z "${NODE_ENV}" ]]; then
   # Set NODE_ENV on this terminal session and system-wide
@@ -95,7 +96,7 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   for i in lamassu-* hkdf bip39; do rm -fv $NPM_BIN/$i; done >> ${LOG_FILE} 2>&1
 
   if [ -d "/usr/lib/node_modules/lamassu-server" ]; then
-      BKP_NAME=lamassu-server-$(date +%s)
+      BKP_NAME=lamassu-server-${timestamp}
       decho "renaming old lamassu-server instance to ${BKP_NAME}"
       mv -v "/usr/lib/node_modules/lamassu-server" "/usr/lib/node_modules/${BKP_NAME}" >> ${LOG_FILE} 2>&1
   fi
