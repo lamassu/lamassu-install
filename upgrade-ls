@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-trap 'rm -f /var/lock/lamassu-update' EXIT
+trap 'cleanup $? $LINENO' EXIT
 
 timestamp=$(date +'%Y%m%d%H%M%S')
 export LOG_FILE=/tmp/update.${timestamp}.log
@@ -20,6 +20,19 @@ rm -f ${LOG_FILE}
 decho () {
   echo `date +"%H:%M:%S"` $1
   echo `date +"%H:%M:%S"` $1 >> ${LOG_FILE}
+}
+
+cleanup () {
+  exit_code="$1"
+  if [ "${exit_code}" != "0" ]; then
+    lineno="$2"
+    decho "There was a error on line ${lineno} (exit code ${exit_code})"
+    decho
+    decho 'The upgrade has been halted due to an error. You may run the upgrade script again in case this resolves the problem.'
+    decho
+    decho 'If you receive this message again, please reach out to our support team.'
+  fi
+  rm -f /var/lock/lamassu-update
 }
 
 cat <<'FIG'
