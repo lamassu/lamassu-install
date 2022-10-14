@@ -3,6 +3,12 @@ set -e
 
 export LOG_FILE=/tmp/update.$(date +"%Y%m%d").log
 
+if [[ -z "${NODE_ENV}" ]]; then
+  # Set NODE_ENV on this terminal session and system-wide
+  export NODE_ENV=production
+  echo 'export NODE_ENV=production' >> /etc/environment
+fi
+
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 UBUNTU_VERSION=$(lsb_release -rs)
 
@@ -80,6 +86,9 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   decho "running migration"
     lamassu-migrate >> ${LOG_FILE} 2>&1
   } || { echo "Failure running migrations" ; exit 1 ; }
+
+  decho "Creating environment symlink..."
+  cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
 
   decho "update to mnemonic"
   lamassu-update-to-mnemonic --prod >> ${LOG_FILE} 2>&1

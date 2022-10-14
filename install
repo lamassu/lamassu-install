@@ -3,6 +3,12 @@ set -e
 
 export LOG_FILE=/tmp/install.log
 
+if [[ -z "${NODE_ENV}" ]]; then
+  # Set NODE_ENV on this terminal session and system-wide
+  export NODE_ENV=production
+  echo 'export NODE_ENV=production' >> /etc/environment
+fi
+
 CERT_DIR=/etc/ssl/certs
 KEY_DIR=/etc/ssl/private
 CONFIG_DIR=/etc/lamassu
@@ -204,6 +210,9 @@ lamassu-migrate >> $LOG_FILE 2>&1
 
 decho "Setting up lamassu-admin..."
 ADMIN_REGISTRATION_URL=`lamassu-register $email superuser 2>> $LOG_FILE`
+
+decho "Creating environment symlink..."
+cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
 
 decho "Setting up backups..."
 BIN=$(npm -g bin)
