@@ -202,6 +202,11 @@ cp $LAMASSU_CA_FILE $LAMASSU_CA_PATH
 
 mkdir -p $OFAC_DATA_DIR
 
+touch $CONFIG_DIR/.env
+
+decho "Creating environment symlink..."
+cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
+
 decho "Setting up environment..."
 node $NODE_MODULES/lamassu-server/tools/build-prod-env.js --db-password $POSTGRES_PW --hostname $IP
 
@@ -210,9 +215,6 @@ lamassu-migrate >> $LOG_FILE 2>&1
 
 decho "Setting up lamassu-admin..."
 ADMIN_REGISTRATION_URL=`lamassu-register $email superuser 2>> $LOG_FILE`
-
-decho "Creating environment symlink..."
-cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
 
 decho "Setting up backups..."
 BIN=$(npm -g bin)

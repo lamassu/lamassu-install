@@ -74,9 +74,17 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
 
   if [ ! -f $CONFIG_DIR/.env ]; then
     decho "Environment file not found, creating one..."
+    touch $CONFIG_DIR/.env
+    decho "Creating environment symlink..."
+    cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
     OPTIONS_POSTGRES_PW=$(grep -oP '(?<="postgresql": ")[^"]*' $CONFIG_DIR/lamassu.json | sed -nr 's/.*:(.*)@.*/\1/p')
     OPTIONS_HOSTNAME=$(grep -oP '(?<="hostname": ")[^"]*' $CONFIG_DIR/lamassu.json)
+    echo $OPTIONS_POSTGRES_PW
+    echo $OPTIONS_HOSTNAME
     node $NODE_MODULES/lamassu-server/tools/build-prod-env.js --db-password $OPTIONS_POSTGRES_PW --hostname $OPTIONS_HOSTNAME
+  else
+    decho "Creating environment symlink..."
+    cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
   fi
 
   decho "migrating config"
@@ -86,9 +94,6 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   decho "running migration"
     lamassu-migrate >> ${LOG_FILE} 2>&1
   } || { echo "Failure running migrations" ; exit 1 ; }
-
-  decho "Creating environment symlink..."
-  cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
 
   decho "update to mnemonic"
   lamassu-update-to-mnemonic --prod >> ${LOG_FILE} 2>&1
