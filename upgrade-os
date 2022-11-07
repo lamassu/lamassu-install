@@ -164,7 +164,7 @@ elif [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   echo
   echo -e "\033[0;33mTo finalise the upgrade, please run the following command:\033[0m"
   echo
-  echo -e "\033[1mcurl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-ls | bash\033[0m"
+  echo -e "\033[1mcurl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/grand-gilgamesh/upgrade-ls | bash\033[0m"
   echo
 
   if [ -f /etc/cron.d/lamassu-upgrade ]; then
