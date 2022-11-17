@@ -91,10 +91,11 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
       mv -v "/usr/lib/node_modules/lamassu-server" "/usr/lib/node_modules/${BKP_NAME}" >> ${LOG_FILE} 2>&1
   fi
 
-  if ! [ -f ./verify ]
+  if ! [ -f verify ]
   then
     decho "Downloading verifier..."
-    curl -O https://raw.githubusercontent.com/lamassu/lamassu-install/grand-gilgamesh/verify 
+    curl -OL https://raw.githubusercontent.com/lamassu/lamassu-install/grand-gilgamesh/verify
+    chmod +x verify
   fi
 
   decho "Downloading update package..."
@@ -104,7 +105,7 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   curl -o /tmp/sig2.asc -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0/sig2.asc
 
   decho "Verifying update package..."
-  lamassu-verify /tmp/lamassu-server-v8.1.0.tar.gz /tmp/sig1.asc /tmp/sig2.asc
+  ./verify /tmp/lamassu-server-v8.1.0.tar.gz /tmp/sig1.asc /tmp/sig2.asc
 
   if [ $? -eq 0 ] then
     decho "Package sucessfully verified"
