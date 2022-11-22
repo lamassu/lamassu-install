@@ -94,28 +94,30 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   if ! [ -f verify ]
   then
     decho "Downloading verifier..."
-    curl -OL https://raw.githubusercontent.com/lamassu/lamassu-install/grand-gilgamesh/verify
+    curl -OL https://raw.githubusercontent.com/lamassu/lamassu-install/grand-gilgamesh/verify >> ${LOG_FILE} 2>&1
     chmod +x verify
   fi
 
   decho "Downloading update package..."
-  curl -o /tmp/lamassu-server-v8.1.0.tar.gz -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0/lamassu-server-v8.1.0.tar.gz
+  curl -o /tmp/lamassu-server-v8.1.0.tar.gz -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0/lamassu-server-v8.1.0.tar.gz >> ${LOG_FILE} 2>&1
 
-  curl -o /tmp/sig1.asc -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0/sig1.asc
-  curl -o /tmp/sig2.asc -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0/sig2.asc
+  curl -o /tmp/sig1.asc -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0/sig1.asc >> ${LOG_FILE} 2>&1
+  curl -o /tmp/sig2.asc -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0/sig2.asc >> ${LOG_FILE} 2>&1
 
   decho "Verifying update package..."
-  ./verify /tmp/lamassu-server-v8.1.0.tar.gz /tmp/sig1.asc /tmp/sig2.asc
+  ./verify /tmp/lamassu-server-v8.1.0.tar.gz /tmp/sig1.asc /tmp/sig2.asc >> ${LOG_FILE} 2>&1
 
   if [ $? -eq 0 ] then
     decho "Package sucessfully verified"
   else
     decho "Package verification failed. Aborting update."
+    rm /tmp/lamassu-server-v8.1.0.tar.gz /tmp/sig1.asc /tmp/sig2.asc >> ${LOG_FILE} 2>&1
     exit 5
   fi
 
   decho "updating lamassu-server to Grand Gilgamesh v8.1..."
   sudo tar -xz -C /usr/lib/node_modules/ /tmp/lamassu-server-v8.1.0.tar.gz >> $LOG_FILE 2>&1
+  rm /tmp/lamassu-server-v8.1.0.tar.gz /tmp/sig1.asc /tmp/sig2.asc >> ${LOG_FILE} 2>&1
 
   NODE_MODULES=$(npm -g root)
   decho "Creating symlinks..."
