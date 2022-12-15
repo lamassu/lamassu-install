@@ -44,7 +44,7 @@ fi
 if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   echo -e "\033[1mDetected Ubuntu version: 20.04. Your operating system is up to date.\033[0m"
   echo
-  echo -e "\033[1mUpdating lamassu-server to Grand Gilgamesh v8.1...\033[0m"
+  echo -e "\033[1mUpdating lamassu-server to Grand Gilgamesh v8.1.0-beta.0...\033[0m"
   echo
 
   export NPM_BIN=$(npm -g bin)
@@ -96,8 +96,8 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
       mv -v "/usr/lib/node_modules/lamassu-server" "/usr/lib/node_modules/${BKP_NAME}" >> ${LOG_FILE} 2>&1
   fi
 
-  decho "updating lamassu-server to Grand Gilgamesh v8.1..."
-  curl -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0/lamassu-server-v8.1.0.tar.gz | sudo tar -xz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
+  decho "updating lamassu-server to Grand Gilgamesh v8.1.0-beta.0..."
+  curl -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0-beta.0/lamassu-server-v8.1.0-beta.0.tar.gz | sudo tar -xz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
 
   NODE_MODULES=$(npm -g root)
   decho "Creating symlinks..."
