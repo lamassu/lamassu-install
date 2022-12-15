@@ -132,7 +132,16 @@ NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
 decho "Installing lamassu-server (Grand Gilgamesh v8.1.0-beta.0)..."
-curl -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0-beta.0/lamassu-server-v8.1.0-beta.0.tar.gz | sudo tar -xz -C $NODE_MODULES/ >> $LOG_FILE 2>&1
+sourceHash=$'7fa9b133225aa325c86a274ce641bc6acb76d8f7f9d987ae5d27ef618c482b83'
+curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v8.1.0-beta.0/lamassu-server-v8.1.0-beta.0.tar.gz >> $LOG_FILE 2>&1
+hash=$(sha256sum /tmp/lamassu-server.tar.gz | awk '{print $1}' | sed 's/ *$//g')
+
+if [ $hash != $sourceHash ] ; then
+    echo 'Package signature does not match!'
+    exit 1
+fi
+
+tar -xz /tmp/lamassu-server.tar.gz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
 
 decho "Creating symlinks..."
 cp --symbolic-link $NODE_MODULES/lamassu-server/bin/* $NPM_BIN/ >> $LOG_FILE 2>&1

@@ -97,7 +97,16 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   fi
 
   decho "updating lamassu-server to Grand Gilgamesh v8.1.0-beta.0..."
-  curl -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0-beta.0/lamassu-server-v8.1.0-beta.0.tar.gz | sudo tar -xz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
+  sourceHash=$'7fa9b133225aa325c86a274ce641bc6acb76d8f7f9d987ae5d27ef618c482b83'
+  curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v8.1.0-beta.0/lamassu-server-v8.1.0-beta.0.tar.gz >> $LOG_FILE 2>&1
+  hash=$(sha256sum /tmp/lamassu-server.tar.gz | awk '{print $1}' | sed 's/ *$//g')
+
+  if [ $hash != $sourceHash ] ; then
+      echo 'Package signature does not match!'
+      exit 1
+  fi
+
+  tar -xz /tmp/lamassu-server.tar.gz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
 
   NODE_MODULES=$(npm -g root)
   decho "Creating symlinks..."
@@ -117,16 +126,11 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
     cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
     OPTIONS_POSTGRES_PW=$(grep -oP '(?<="postgresql": ")[^"]*' $CONFIG_DIR/lamassu.json | sed -nr 's/.*:(.*)@.*/\1/p')
     OPTIONS_HOSTNAME=$(grep -oP '(?<="hostname": ")[^"]*' $CONFIG_DIR/lamassu.json)
-    echo $OPTIONS_POSTGRES_PW
-    echo $OPTIONS_HOSTNAME
     node $NODE_MODULES/lamassu-server/tools/build-prod-env.js --db-password $OPTIONS_POSTGRES_PW --hostname $OPTIONS_HOSTNAME
   else
     decho "Creating environment symlink..."
     cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
   fi
-
-  decho "migrating config"
-  lamassu-migrate-config >> ${LOG_FILE} 2>&1
 
   {
   decho "running migration"
