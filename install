@@ -141,7 +141,7 @@ if [ $hash != $sourceHash ] ; then
     exit 1
 fi
 
-tar -xz /tmp/lamassu-server.tar.gz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
+tar -xzf /tmp/lamassu-server.tar.gz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
 
 decho "Creating symlinks..."
 cp --symbolic-link $NODE_MODULES/lamassu-server/bin/* $NPM_BIN/ >> $LOG_FILE 2>&1

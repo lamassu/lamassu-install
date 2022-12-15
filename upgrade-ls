@@ -106,7 +106,7 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
       exit 1
   fi
 
-  tar -xz /tmp/lamassu-server.tar.gz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
+  tar -xzf /tmp/lamassu-server.tar.gz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
 
   NODE_MODULES=$(npm -g root)
   decho "Creating symlinks..."
