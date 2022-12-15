@@ -144,7 +144,8 @@ fi
 tar -xzf /tmp/lamassu-server.tar.gz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
 
 decho "Creating symlinks..."
-cp --symbolic-link $NODE_MODULES/lamassu-server/bin/* $NPM_BIN/ >> $LOG_FILE 2>&1
+for i in lamassu-* hkdf bip39; do cp -s $NODE_MODULES/lamassu-server/bin/$i $NPM_BIN/; done >> ${LOG_FILE} 2>&1
+chmod +x $NODE_MODULES/lamassu-server/bin/* >> ${LOG_FILE} 2>&1
 
 decho "Generating mnemonic..."
 mkdir -p $MNEMONIC_DIR >> $LOG_FILE 2>&1

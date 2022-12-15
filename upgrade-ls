@@ -88,7 +88,7 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   supervisorctl stop lamassu-admin-server >> ${LOG_FILE} 2>&1
 
   decho "unlinking old executables"
-  find ${NPM_BIN} -type l \( -name "lamassu-*" -or -name "hkdf" \) -exec rm -fv {} \; >> ${LOG_FILE} 2>&1
+  for i in lamassu-* hkdf bip39; do rm -fv $NPM_BIN/$i; done >> ${LOG_FILE} 2>&1
 
   if [ -d "/usr/lib/node_modules/lamassu-server" ]; then
       BKP_NAME=lamassu-server-$(date +%s)
@@ -110,7 +110,8 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
 
   NODE_MODULES=$(npm -g root)
   decho "Creating symlinks..."
-  cp --symbolic-link $NODE_MODULES/lamassu-server/bin/* $NPM_BIN/ >> $LOG_FILE 2>&1
+  for i in lamassu-* hkdf bip39; do cp -s $NODE_MODULES/lamassu-server/bin/$i $NPM_BIN/; done >> ${LOG_FILE} 2>&1
+  chmod +x $NODE_MODULES/lamassu-server/bin/* >> ${LOG_FILE} 2>&1
 
   decho "rebuilding npm deps"
   cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
