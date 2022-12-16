@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
-export LOG_FILE=/tmp/update.$(date +"%Y%m%d").log
+trap 'cleanup $? $LINENO' EXIT
+
+timestamp=$(date +'%Y%m%d%H%M%S')
+export LOG_FILE=/tmp/update.${timestamp}.log
 
 if [[ -z "${NODE_ENV}" ]]; then
   # Set NODE_ENV on this terminal session and system-wide
@@ -17,6 +20,19 @@ rm -f ${LOG_FILE}
 decho () {
   echo `date +"%H:%M:%S"` $1
   echo `date +"%H:%M:%S"` $1 >> ${LOG_FILE}
+}
+
+cleanup () {
+  exit_code="$1"
+  if [ "${exit_code}" != "0" ]; then
+    lineno="$2"
+    decho "There was a error on line ${lineno} (exit code ${exit_code})"
+    decho
+    decho 'The upgrade has been halted due to an error. You may run the upgrade script again in case this resolves the problem.'
+    decho
+    decho 'If you receive this message again, please reach out to our support team.'
+  fi
+  rm -f /var/lock/lamassu-update
 }
 
 cat <<'FIG'
@@ -37,7 +53,8 @@ fi
 # Use a lock file so failed scripts cannot be imediately retried
 # If not the backup created on this script would be replaced
 if ! mkdir /var/lock/lamassu-update; then
-  echo "Script is locked because of a failure." >&2
+  echo "It seems the script is already running. Aborting." >&2
+  trap "" EXIT # Don't remove another script's lock
   exit 1
 fi
 
@@ -52,7 +69,8 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   # Check if ETH was transacted for the first time before 8.0
   SERVER_RELEASE=$(node -p -e "require('$(npm root -g)/lamassu-server/package.json').version")
 
-  if [ $(printf "%s\n" "$SERVER_RELEASE" "8.0.0" | sort -V | head -1) = "$SERVER_RELEASE" ] || [ "$SERVER_RELEASE" = "8.0.0-beta.6" ]
+  # SERVER_RELEASE should be empty if the command fails, such as if the file doesn't exist
+  if [ ${SERVER_RELEASE} = "" ] || [ $(printf "%s\n" "$SERVER_RELEASE" "8.0.0" | sort -V | head -1) = "$SERVER_RELEASE" ] || [ "$SERVER_RELEASE" = "8.0.0-beta.6" ]
   then
     : # no-op, ETH issue is fixed or never occurred when on these versions. sort -V considers 8.0.0 < 8.0.0-beta.X, hence the extra check
   elif [ $(printf "%s\n" "$SERVER_RELEASE" "8.0.0-beta.5" | sort -V | head -1) = "$SERVER_RELEASE" ]
@@ -88,20 +106,30 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   supervisorctl stop lamassu-admin-server >> ${LOG_FILE} 2>&1
 
   decho "unlinking old executables"
-  find ${NPM_BIN} -type l \( -name "lamassu-*" -or -name "hkdf" \) -exec rm -fv {} \; >> ${LOG_FILE} 2>&1
+  for i in lamassu-* hkdf bip39; do rm -fv $NPM_BIN/$i; done >> ${LOG_FILE} 2>&1
 
   if [ -d "/usr/lib/node_modules/lamassu-server" ]; then
-      BKP_NAME=lamassu-server-$(date +%s)
+      BKP_NAME=lamassu-server-${timestamp}
       decho "renaming old lamassu-server instance to ${BKP_NAME}"
       mv -v "/usr/lib/node_modules/lamassu-server" "/usr/lib/node_modules/${BKP_NAME}" >> ${LOG_FILE} 2>&1
   fi
 
   decho "updating lamassu-server to Grand Gilgamesh v8.1.0-beta.0..."
-  curl -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0-beta.0/lamassu-server-v8.1.0-beta.0.tar.gz | sudo tar -xz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
+  sourceHash=$'ab2902c5734822959b5591187b16f45e30192a3900dc05f21e129d856b7d3b82'
+  curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v8.1.0-beta.0/lamassu-server-v8.1.0-beta.0.tar.gz >> $LOG_FILE 2>&1
+  hash=$(sha256sum /tmp/lamassu-server.tar.gz | awk '{print $1}' | sed 's/ *$//g')
+
+  if [ $hash != $sourceHash ] ; then
+      echo 'Package signature does not match!'
+      exit 1
+  fi
+
+  tar -xzf /tmp/lamassu-server.tar.gz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
 
   NODE_MODULES=$(npm -g root)
   decho "Creating symlinks..."
-  cp --symbolic-link $NODE_MODULES/lamassu-server/bin/* $NPM_BIN/ >> $LOG_FILE 2>&1
+  for i in lamassu-* hkdf bip39; do cp -s $NODE_MODULES/lamassu-server/bin/$i $NPM_BIN/; done >> ${LOG_FILE} 2>&1
+  chmod +x $NODE_MODULES/lamassu-server/bin/* >> ${LOG_FILE} 2>&1
 
   decho "rebuilding npm deps"
   cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
@@ -117,16 +145,11 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
     cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
     OPTIONS_POSTGRES_PW=$(grep -oP '(?<="postgresql": ")[^"]*' $CONFIG_DIR/lamassu.json | sed -nr 's/.*:(.*)@.*/\1/p')
     OPTIONS_HOSTNAME=$(grep -oP '(?<="hostname": ")[^"]*' $CONFIG_DIR/lamassu.json)
-    echo $OPTIONS_POSTGRES_PW
-    echo $OPTIONS_HOSTNAME
     node $NODE_MODULES/lamassu-server/tools/build-prod-env.js --db-password $OPTIONS_POSTGRES_PW --hostname $OPTIONS_HOSTNAME
   else
     decho "Creating environment symlink..."
     cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
   fi
-
-  decho "migrating config"
-  lamassu-migrate-config >> ${LOG_FILE} 2>&1
 
   {
   decho "running migration"

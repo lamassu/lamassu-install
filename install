@@ -132,10 +132,20 @@ NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
 decho "Installing lamassu-server (Grand Gilgamesh v8.1.0-beta.0)..."
-curl -sSL https://github.com/lamassu/lamassu-server/releases/download/v8.1.0-beta.0/lamassu-server-v8.1.0-beta.0.tar.gz | sudo tar -xz -C $NODE_MODULES/ >> $LOG_FILE 2>&1
+sourceHash=$'ab2902c5734822959b5591187b16f45e30192a3900dc05f21e129d856b7d3b82'
+curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v8.1.0-beta.0/lamassu-server-v8.1.0-beta.0.tar.gz >> $LOG_FILE 2>&1
+hash=$(sha256sum /tmp/lamassu-server.tar.gz | awk '{print $1}' | sed 's/ *$//g')
+
+if [ $hash != $sourceHash ] ; then
+    echo 'Package signature does not match!'
+    exit 1
+fi
+
+tar -xzf /tmp/lamassu-server.tar.gz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
 
 decho "Creating symlinks..."
-cp --symbolic-link $NODE_MODULES/lamassu-server/bin/* $NPM_BIN/ >> $LOG_FILE 2>&1
+for i in lamassu-* hkdf bip39; do cp -s $NODE_MODULES/lamassu-server/bin/$i $NPM_BIN/; done >> ${LOG_FILE} 2>&1
+chmod +x $NODE_MODULES/lamassu-server/bin/* >> ${LOG_FILE} 2>&1
 
 decho "Generating mnemonic..."
 mkdir -p $MNEMONIC_DIR >> $LOG_FILE 2>&1
