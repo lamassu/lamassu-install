@@ -73,7 +73,7 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
       : # no-op, continue the upgrade
     elif ! mkdir /var/lock/lamassu-eth-pending-sweep; then
       echo "Upgrading l-s is locked because of an intended halt. Please contact support for more info" >&2
-      rm -r /var/lock/lamassu-update
+      rmdir /var/lock/lamassu-update
       exit 1
     else
       CONFIG_DIR=/etc/lamassu
@@ -88,10 +88,10 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
       elif [ $FIRST_ETH_TX_TIME \> $FIRST_FF_MIGRATION_TIME ]; then
         echo -e "\n\033[0;31mAn Ethereum transaction was detected to have been made for the first time after the v8.0 beta upgrade.\n\nThis is okay and funds are safe, but it will require a unique update path. In order to continue, please contact support for specific update instructions.\n\nMeanwhile, your server and machine(s) continue to run on their current versions.\033[0m\n"
 #        curl -o $(npm root -g)/lamassu-server/bin/lamassu-eth-sweep-to-new-wallet https://raw.githubusercontent.com/lamassu/lamassu-server/release-8.0/bin/lamassu-eth-sweep-to-new-wallet >> ${LOG_FILE} 2>&1
-        rm -r /var/lock/lamassu-update
+        rmdir /var/lock/lamassu-update
         exit 1
       fi
-      rm -r /var/lock/lamassu-eth-pending-sweep
+      rmdir /var/lock/lamassu-eth-pending-sweep
     fi
   fi
 
@@ -176,8 +176,8 @@ fi
 # reset terminal to link new executables
 hash -r
 
-rm -r /var/lock/lamassu-update
+rmdir /var/lock/lamassu-update
 
 if [ -d /var/lock/lamassu-eth-pending-sweep-finished ]; then
-  rm -r /var/lock/lamassu-eth-pending-sweep-finished
+  rmdir /var/lock/lamassu-eth-pending-sweep-finished
 fi
