@@ -55,7 +55,7 @@ fi
 if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   echo -e "\033[1mDetected Ubuntu version: 20.04. Your operating system is up to date.\033[0m"
   echo
-  echo -e "\033[1mUpdating lamassu-server to Forsaken Fiat v8.0.5...\033[0m"
+  echo -e "\033[1mUpdating lamassu-server to Forsaken Fiat v8.0.6...\033[0m"
   echo
 
   export NPM_BIN=$(npm -g bin)
@@ -73,7 +73,7 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
       : # no-op, continue the upgrade
     elif ! mkdir /var/lock/lamassu-eth-pending-sweep; then
       echo "Upgrading l-s is locked because of an intended halt. Please contact support for more info" >&2
-      rm -r /var/lock/lamassu-update
+      rmdir /var/lock/lamassu-update
       exit 1
     else
       CONFIG_DIR=/etc/lamassu
@@ -88,10 +88,10 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
       elif [ $FIRST_ETH_TX_TIME \> $FIRST_FF_MIGRATION_TIME ]; then
         echo -e "\n\033[0;31mAn Ethereum transaction was detected to have been made for the first time after the v8.0 beta upgrade.\n\nThis is okay and funds are safe, but it will require a unique update path. In order to continue, please contact support for specific update instructions.\n\nMeanwhile, your server and machine(s) continue to run on their current versions.\033[0m\n"
 #        curl -o $(npm root -g)/lamassu-server/bin/lamassu-eth-sweep-to-new-wallet https://raw.githubusercontent.com/lamassu/lamassu-server/release-8.0/bin/lamassu-eth-sweep-to-new-wallet >> ${LOG_FILE} 2>&1
-        rm -r /var/lock/lamassu-update
+        rmdir /var/lock/lamassu-update
         exit 1
       fi
-      rm -r /var/lock/lamassu-eth-pending-sweep
+      rmdir /var/lock/lamassu-eth-pending-sweep
     fi
   fi
 
@@ -108,9 +108,9 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
       mv -v "/usr/lib/node_modules/lamassu-server" "/usr/lib/node_modules/${BKP_NAME}" >> ${LOG_FILE} 2>&1
   fi
 
-  decho "updating lamassu-server to Forsaken Fiat v8.0.5..."
+  decho "updating lamassu-server to Forsaken Fiat v8.0.6..."
   echo "NOTE: This portion can take upward of 20 minutes to complete. Leave this running until you see subsequent messages..."
-  npm -g install lamassu/lamassu-server#v8.0.5 --unsafe-perm >> ${LOG_FILE} 2>&1
+  npm -g install lamassu/lamassu-server#v8.0.6 --unsafe-perm >> ${LOG_FILE} 2>&1
 
   decho "rebuilding npm deps"
   cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
@@ -176,8 +176,8 @@ fi
 # reset terminal to link new executables
 hash -r
 
-rm -r /var/lock/lamassu-update
+rmdir /var/lock/lamassu-update
 
 if [ -d /var/lock/lamassu-eth-pending-sweep-finished ]; then
-  rm -r /var/lock/lamassu-eth-pending-sweep-finished
+  rmdir /var/lock/lamassu-eth-pending-sweep-finished
 fi
