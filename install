@@ -131,21 +131,9 @@ IP=$(ifconfig eth0 | grep "inet" | grep -v "inet6" | awk '{print $2}')
 NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
-decho "Installing lamassu-server (Grand Gilgamesh v8.1.0-beta.1)..."
-sourceHash=$'a9b8701ed81bfabab54ebbf4686bd84e7cb062476c178cedbdfcd92be6d009b6'
-curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v8.1.0-beta.1/lamassu-server-v8.1.0-beta.1.tar.gz >> $LOG_FILE 2>&1
-hash=$(sha256sum /tmp/lamassu-server.tar.gz | awk '{print $1}' | sed 's/ *$//g')
-
-if [ $hash != $sourceHash ] ; then
-    echo 'Package signature does not match!'
-    exit 1
-fi
-
-tar -xzf /tmp/lamassu-server.tar.gz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
-
-decho "Creating symlinks..."
-for i in lamassu-* hkdf bip39; do cp -s $NODE_MODULES/lamassu-server/bin/$i $NPM_BIN/; done >> ${LOG_FILE} 2>&1
-chmod +x $NODE_MODULES/lamassu-server/bin/* >> ${LOG_FILE} 2>&1
+decho "Installing lamassu-server (v8.5.0)..."
+echo "NOTE: This portion can take upward of 20 minutes to complete. Leave this running until you see subsequent messages..."
+retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#release-8.5 >> $LOG_FILE 2>&1
 
 decho "Generating mnemonic..."
 mkdir -p $MNEMONIC_DIR >> $LOG_FILE 2>&1
