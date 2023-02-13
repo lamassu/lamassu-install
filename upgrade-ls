@@ -55,7 +55,7 @@ fi
 if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   echo -e "\033[1mDetected Ubuntu version: 20.04. Your operating system is up to date.\033[0m"
   echo
-  echo -e "\033[1mUpdating lamassu-server to Forsaken Fiat v8.0.6...\033[0m"
+  echo -e "\033[1mUpdating lamassu-server to Forsaken Fiat v8.0.7...\033[0m"
   echo
 
   export NPM_BIN=$(npm -g bin)
@@ -108,9 +108,9 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
       mv -v "/usr/lib/node_modules/lamassu-server" "/usr/lib/node_modules/${BKP_NAME}" >> ${LOG_FILE} 2>&1
   fi
 
-  decho "updating lamassu-server to Forsaken Fiat v8.0.6..."
+  decho "updating lamassu-server to Forsaken Fiat v8.0.7..."
   echo "NOTE: This portion can take upward of 20 minutes to complete. Leave this running until you see subsequent messages..."
-  npm -g install lamassu/lamassu-server#v8.0.6 --unsafe-perm >> ${LOG_FILE} 2>&1
+  npm -g install lamassu/lamassu-server#v8.0.7 --unsafe-perm >> ${LOG_FILE} 2>&1
 
   decho "rebuilding npm deps"
   cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
