@@ -6,6 +6,12 @@ trap 'cleanup $? $LINENO' EXIT
 timestamp=$(date +'%Y%m%d%H%M%S')
 export LOG_FILE=/tmp/update.${timestamp}.log
 
+if [[ -z "${NODE_ENV}" ]]; then
+  # Set NODE_ENV on this terminal session and system-wide
+  export NODE_ENV=production
+  echo 'export NODE_ENV=production' >> /etc/environment
+fi
+
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 UBUNTU_VERSION=$(lsb_release -rs)
 
@@ -112,16 +118,35 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   echo "NOTE: This portion can take upward of 20 minutes to complete. Leave this running until you see subsequent messages..."
   npm -g install lamassu/lamassu-server#ln-galoy --unsafe-perm >> ${LOG_FILE} 2>&1
 
+  NODE_MODULES=$(npm -g root)
+  decho "Creating symlinks..."
+  for i in lamassu-* hkdf bip39; do cp -s $NODE_MODULES/lamassu-server/bin/$i $NPM_BIN/; done >> ${LOG_FILE} 2>&1
+  chmod +x $NODE_MODULES/lamassu-server/bin/* >> ${LOG_FILE} 2>&1
+
   decho "rebuilding npm deps"
   cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
   npm rebuild >> ${LOG_FILE} 2>&1
+
+  NODE_MODULES=$(npm -g root)
+  CONFIG_DIR=/etc/lamassu
+
+  if [ ! -f $CONFIG_DIR/.env ]; then
+    decho "Environment file not found, creating one..."
+    touch $CONFIG_DIR/.env
+    decho "Creating environment symlink..."
+    cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
+    OPTIONS_POSTGRES_PW=$(grep -oP '(?<="postgresql": ")[^"]*' $CONFIG_DIR/lamassu.json | sed -nr 's/.*:(.*)@.*/\1/p')
+    OPTIONS_HOSTNAME=$(grep -oP '(?<="hostname": ")[^"]*' $CONFIG_DIR/lamassu.json)
+    node $NODE_MODULES/lamassu-server/tools/build-prod-env.js --db-password $OPTIONS_POSTGRES_PW --hostname $OPTIONS_HOSTNAME
+  else
+    decho "Creating environment symlink..."
+    cp --symbolic-link $CONFIG_DIR/.env $NODE_MODULES/lamassu-server/.env >> $LOG_FILE 2>&1
+  fi
 
   {
   decho "running migration"
     lamassu-migrate >> ${LOG_FILE} 2>&1
   } || { echo "Failure running migrations" ; exit 1 ; }
-
-  lamassu-migrate-config >> ${LOG_FILE} 2>&1
 
   decho "update to mnemonic"
   lamassu-update-to-mnemonic --prod >> ${LOG_FILE} 2>&1
@@ -132,6 +157,8 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   decho "updating supervisor conf"
   perl -i -pe 's/command=.*/command=$ENV{NPM_BIN}\/lamassu-server/g' /etc/supervisor/conf.d/lamassu-server.conf >> ${LOG_FILE} 2>&1
   perl -i -pe 's/command=.*/command=$ENV{NPM_BIN}\/lamassu-admin-server/g' /etc/supervisor/conf.d/lamassu-admin-server.conf >> ${LOG_FILE} 2>&1
+  perl -i -pe 's/environment=.*/environment=HOME="\/root",NODE_ENV="production"/g' /etc/supervisor/conf.d/lamassu-server.conf >> ${LOG_FILE} 2>&1
+  perl -i -pe 's/environment=.*/environment=HOME="\/root",NODE_ENV="production"/g' /etc/supervisor/conf.d/lamassu-admin-server.conf >> ${LOG_FILE} 2>&1
   cat <<EOF >> /etc/supervisor/supervisord.conf
 [inet_http_server]
 port = 127.0.0.1:9001
