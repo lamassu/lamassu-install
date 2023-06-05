@@ -135,10 +135,6 @@ decho "Installing lamassu-server (ln-galoy branch)..."
 echo "NOTE: This portion can take upward of 20 minutes to complete. Leave this running until you see subsequent messages..."
 retry 3 npm -g --unsafe-perm install lamassu/lamassu-server#ln-galoy >> $LOG_FILE 2>&1
 
-decho "Creating symlinks..."
-for i in lamassu-* hkdf bip39; do cp -s $NODE_MODULES/lamassu-server/bin/$i $NPM_BIN/; done >> ${LOG_FILE} 2>&1
-chmod +x $NODE_MODULES/lamassu-server/bin/* >> ${LOG_FILE} 2>&1
-
 decho "Generating mnemonic..."
 mkdir -p $MNEMONIC_DIR >> $LOG_FILE 2>&1
 SEED=$(openssl rand -hex 32)

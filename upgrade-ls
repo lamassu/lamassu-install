@@ -118,11 +118,6 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   echo "NOTE: This portion can take upward of 20 minutes to complete. Leave this running until you see subsequent messages..."
   npm -g install lamassu/lamassu-server#ln-galoy --unsafe-perm >> ${LOG_FILE} 2>&1
 
-  NODE_MODULES=$(npm -g root)
-  decho "Creating symlinks..."
-  for i in lamassu-* hkdf bip39; do cp -s $NODE_MODULES/lamassu-server/bin/$i $NPM_BIN/; done >> ${LOG_FILE} 2>&1
-  chmod +x $NODE_MODULES/lamassu-server/bin/* >> ${LOG_FILE} 2>&1
-
   decho "rebuilding npm deps"
   cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
   npm rebuild >> ${LOG_FILE} 2>&1
