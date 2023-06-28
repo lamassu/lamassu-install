@@ -15,7 +15,7 @@ fi
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 UBUNTU_VERSION=$(lsb_release -rs)
 NODE_MODULES=$(npm -g root)
-NPM_BIN=$(npm -g bin)
+export NPM_BIN=$(npm -g bin)
 
 rm -f ${LOG_FILE}
 
