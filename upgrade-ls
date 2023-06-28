@@ -14,6 +14,8 @@ fi
 
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 UBUNTU_VERSION=$(lsb_release -rs)
+NODE_MODULES=$(npm -g root)
+NPM_BIN=$(npm -g bin)
 
 rm -f ${LOG_FILE}
 
@@ -64,8 +66,6 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   echo -e "\033[1mUpdating lamassu-server to Grand Gilgamesh v8.1.2...\033[0m"
   echo
 
-  export NPM_BIN=$(npm -g bin)
-
   # Check if ETH was transacted for the first time before 8.0
   SERVER_RELEASE=$(node -p -e "require('$(npm root -g)/lamassu-server/package.json').version")
 
@@ -106,7 +106,9 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   supervisorctl stop lamassu-admin-server >> ${LOG_FILE} 2>&1
 
   decho "unlinking old executables"
-  for i in lamassu-* hkdf bip39; do rm -fv $NPM_BIN/$i; done >> ${LOG_FILE} 2>&1
+  rm $NPM_BIN/lamassu-* >> ${LOG_FILE} 2>&1
+  rm $NPM_BIN/hkdf >> ${LOG_FILE} 2>&1
+  rm $NPM_BIN/bip39 >> ${LOG_FILE} 2>&1
 
   if [ -d "/usr/lib/node_modules/lamassu-server" ]; then
       BKP_NAME=lamassu-server-${timestamp}
@@ -126,16 +128,16 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
 
   tar -xzf /tmp/lamassu-server.tar.gz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
 
-  NODE_MODULES=$(npm -g root)
   decho "Creating symlinks..."
-  for i in lamassu-* hkdf bip39; do cp -s $NODE_MODULES/lamassu-server/bin/$i $NPM_BIN/; done >> ${LOG_FILE} 2>&1
+  cp -s $NODE_MODULES/lamassu-server/bin/lamassu-* $NPM_BIN/ >> ${LOG_FILE} 2>&1
+  cp -s $NODE_MODULES/lamassu-server/bin/hkdf $NPM_BIN/ >> ${LOG_FILE} 2>&1
+  cp -s $NODE_MODULES/lamassu-server/bin/bip39 $NPM_BIN/ >> ${LOG_FILE} 2>&1
   chmod +x $NODE_MODULES/lamassu-server/bin/* >> ${LOG_FILE} 2>&1
 
   decho "rebuilding npm deps"
   cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
   npm rebuild >> ${LOG_FILE} 2>&1
 
-  NODE_MODULES=$(npm -g root)
   CONFIG_DIR=/etc/lamassu
 
   if [ ! -f $CONFIG_DIR/.env ]; then
