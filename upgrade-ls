@@ -106,9 +106,11 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   supervisorctl stop lamassu-admin-server >> ${LOG_FILE} 2>&1
 
   decho "unlinking old executables"
+  set +e
   rm $NPM_BIN/lamassu-* >> ${LOG_FILE} 2>&1
   rm $NPM_BIN/hkdf >> ${LOG_FILE} 2>&1
   rm $NPM_BIN/bip39 >> ${LOG_FILE} 2>&1
+  set -e
 
   if [ -d "/usr/lib/node_modules/lamassu-server" ]; then
       BKP_NAME=lamassu-server-${timestamp}
