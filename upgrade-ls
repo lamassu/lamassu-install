@@ -14,6 +14,8 @@ fi
 
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 UBUNTU_VERSION=$(lsb_release -rs)
+NODE_MODULES=$(npm -g root)
+export NPM_BIN=$(npm -g bin)
 
 rm -f ${LOG_FILE}
 
@@ -61,10 +63,8 @@ fi
 if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   echo -e "\033[1mDetected Ubuntu version: 20.04. Your operating system is up to date.\033[0m"
   echo
-  echo -e "\033[1mUpdating lamassu-server to Grand Gilgamesh v8.5.0-beta.1...\033[0m"
+  echo -e "\033[1mUpdating lamassu-server to Grand Gilgamesh v8.6.0-beta.1...\033[0m"
   echo
-
-  export NPM_BIN=$(npm -g bin)
 
   # Check if ETH was transacted for the first time before 8.0
   SERVER_RELEASE=$(node -p -e "require('$(npm root -g)/lamassu-server/package.json').version")
@@ -106,7 +106,11 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   supervisorctl stop lamassu-admin-server >> ${LOG_FILE} 2>&1
 
   decho "unlinking old executables"
-  for i in lamassu-* hkdf bip39; do rm -fv $NPM_BIN/$i; done >> ${LOG_FILE} 2>&1
+  set +e
+  rm $NPM_BIN/lamassu-* >> ${LOG_FILE} 2>&1
+  rm $NPM_BIN/hkdf >> ${LOG_FILE} 2>&1
+  rm $NPM_BIN/bip39 >> ${LOG_FILE} 2>&1
+  set -e
 
   if [ -d "/usr/lib/node_modules/lamassu-server" ]; then
       BKP_NAME=lamassu-server-${timestamp}
@@ -114,9 +118,9 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
       mv -v "/usr/lib/node_modules/lamassu-server" "/usr/lib/node_modules/${BKP_NAME}" >> ${LOG_FILE} 2>&1
   fi
 
-  decho "updating lamassu-server to Grand Gilgamesh v8.5.0-beta.1..."
-  sourceHash=$'729d2581e357dd77250456bc4e430db9565df1dcb56441eb3ceca6bbe69bb086'
-  curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v8.5.0-beta.1/lamassu-server-8.5.0-beta.1.tar.gz >> $LOG_FILE 2>&1
+  decho "updating lamassu-server to Grand Gilgamesh v8.6.0-beta.1..."
+  sourceHash=$'2607f14a9f73fb9dbcbf575c240fb297dedc19980b871a275e51d2a3517e768a'
+  curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v8.6.0-beta.1/lamassu-server-8.6.0-beta.1.tar.gz >> $LOG_FILE 2>&1
   hash=$(sha256sum /tmp/lamassu-server.tar.gz | awk '{print $1}' | sed 's/ *$//g')
 
   if [ $hash != $sourceHash ] ; then
@@ -126,16 +130,16 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
 
   tar -xzf /tmp/lamassu-server.tar.gz -C /usr/lib/node_modules/ >> $LOG_FILE 2>&1
 
-  NODE_MODULES=$(npm -g root)
   decho "Creating symlinks..."
-  for i in lamassu-* hkdf bip39; do cp -s $NODE_MODULES/lamassu-server/bin/$i $NPM_BIN/; done >> ${LOG_FILE} 2>&1
+  cp -s $NODE_MODULES/lamassu-server/bin/lamassu-* $NPM_BIN/ >> ${LOG_FILE} 2>&1
+  cp -s $NODE_MODULES/lamassu-server/bin/hkdf $NPM_BIN/ >> ${LOG_FILE} 2>&1
+  cp -s $NODE_MODULES/lamassu-server/bin/bip39 $NPM_BIN/ >> ${LOG_FILE} 2>&1
   chmod +x $NODE_MODULES/lamassu-server/bin/* >> ${LOG_FILE} 2>&1
 
   decho "rebuilding npm deps"
   cd $(npm root -g)/lamassu-server/ >> ${LOG_FILE} 2>&1
   npm rebuild >> ${LOG_FILE} 2>&1
 
-  NODE_MODULES=$(npm -g root)
   CONFIG_DIR=/etc/lamassu
 
   if [ ! -f $CONFIG_DIR/.env ]; then
