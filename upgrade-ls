@@ -171,7 +171,7 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   perl -i -pe 's/command=.*/command=$ENV{NPM_BIN}\/lamassu-admin-server/g' /etc/supervisor/conf.d/lamassu-admin-server.conf >> ${LOG_FILE} 2>&1
   perl -i -pe 's/environment=.*/environment=HOME="\/root",NODE_ENV="production"/g' /etc/supervisor/conf.d/lamassu-server.conf >> ${LOG_FILE} 2>&1
   perl -i -pe 's/environment=.*/environment=HOME="\/root",NODE_ENV="production"/g' /etc/supervisor/conf.d/lamassu-admin-server.conf >> ${LOG_FILE} 2>&1
-  perl -i -pe 's/command=\/usr\/bin\/lamassu-server/command=\/usr\/bin\/lamassu-server --telnyx/g' /etc/supervisor/conf.d/lamassu-server.conf >> ${LOG_FILE} 2>&1
+  perl -i -pe 's/command=\/usr\/bin\/lamassu-server/command=\/usr\/bin\/lamassu-server --telnyxSms/g' /etc/supervisor/conf.d/lamassu-server.conf >> ${LOG_FILE} 2>&1
   cat <<EOF >> /etc/supervisor/supervisord.conf
 [inet_http_server]
 port = 127.0.0.1:9001

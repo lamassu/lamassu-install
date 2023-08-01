@@ -246,7 +246,7 @@ ufw -f enable >> $LOG_FILE 2>&1
 decho "Setting up supervisor..."
 cat <<EOF > /etc/supervisor/conf.d/lamassu-server.conf
 [program:lamassu-server]
-command=${NPM_BIN}/lamassu-server
+command=${NPM_BIN}/lamassu-server --telnyxSms
 autostart=true
 autorestart=true
 stderr_logfile=/var/log/supervisor/lamassu-server.err.log
