@@ -115,7 +115,7 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   if [ -d "/usr/lib/node_modules/lamassu-server" ]; then
       BKP_NAME=lamassu-server-${timestamp}
       decho "renaming old lamassu-server instance to ${BKP_NAME}"
-      mv -v "${NODE_MODULES}/lamassu-server" "/usr/lib/node_modules/${BKP_NAME}" >> ${LOG_FILE} 2>&1
+      mv -v "${NODE_MODULES}/lamassu-server" "${NODE_MODULES}/${BKP_NAME}" >> ${LOG_FILE} 2>&1
   fi
 
   decho "updating lamassu-server to Grand Gilgamesh v8.1.3..."
