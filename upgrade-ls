@@ -63,7 +63,7 @@ fi
 if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   echo -e "\033[1mDetected Ubuntu version: 20.04. Your operating system is up to date.\033[0m"
   echo
-  echo -e "\033[1mUpdating lamassu-server to Grand Gilgamesh v8.6.0-beta.1...\033[0m"
+  echo -e "\033[1mUpdating lamassu-server to Grand Gilgamesh v8.6.0-beta.6...\033[0m"
   echo
 
   # Check if ETH was transacted for the first time before 8.0
