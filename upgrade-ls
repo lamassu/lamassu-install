@@ -119,7 +119,7 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   fi
 
   decho "updating lamassu-server to Grand Gilgamesh v8.6.0-beta.6..."
-  sourceHash=$'55c0815cf179596a93593f2206f4f7184bc4a91cd2b97c5a4cff9bb784a437d8'
+  sourceHash=$'344cb3d8fb9bbad543a5d030dce8d8a85f768c1fb7192db7790833e96afcdf1e'
   curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v8.6.0-beta.6/lamassu-server-v8.6.0-beta.6.tar.gz >> $LOG_FILE 2>&1
   hash=$(sha256sum /tmp/lamassu-server.tar.gz | awk '{print $1}' | sed 's/ *$//g')
 
