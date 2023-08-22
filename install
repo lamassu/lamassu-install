@@ -132,7 +132,7 @@ NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
 decho "Installing lamassu-server (Grand Gilgamesh v8.1.4)..."
-sourceHash=$'eb654d87ac2bcaf4eb61d72721c25cbdec21aa2c766765c416ccf7e1bea71db9'
+sourceHash=$'963ad42f0dce82698d09ccdc81de8abdbc10dd81952c1e1c81165b4789b7bb8e'
 curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v8.1.4/lamassu-server-v8.1.4.tar.gz >> $LOG_FILE 2>&1
 hash=$(sha256sum /tmp/lamassu-server.tar.gz | awk '{print $1}' | sed 's/ *$//g')
 
