@@ -131,8 +131,8 @@ IP=$(ifconfig eth0 | grep "inet" | grep -v "inet6" | awk '{print $2}')
 NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
-decho "Installing lamassu-server (Grand Gilgamesh v8.1.5-1)..."
-sourceHash=$'838d2e8d3415f84375d3ed947fcaf4eedc7054141b768552da1fdd566230c9e2'
+decho "Installing lamassu-server (v9.0.0-beta.0)..."
+sourceHash=$'5b7f82580b5800144ea38bca2b242ac73fbbf2cb6c39463b5669b681b779b2df'
 curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v9.0.0-beta.0/lamassu-server-v9.0.0-beta.0.tar.gz >> $LOG_FILE 2>&1
 hash=$(sha256sum /tmp/lamassu-server.tar.gz | awk '{print $1}' | sed 's/ *$//g')
 
