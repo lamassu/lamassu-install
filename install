@@ -132,7 +132,7 @@ NODE_MODULES=$(npm -g root)
 NPM_BIN=$(npm -g bin)
 
 decho "Installing lamassu-server (v10.0.0-beta.0)..."
-sourceHash=$'9f4763bfbb404e8d403edb18a89e2543902bccdc0a1e856dde7b1d2ed254d4b3'
+sourceHash=$'8d6de75492a5e107a0732f6820f3eed4304cf21d401aa08f5ccd4b5b647b34c5'
 curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v10.0.0-beta.0/lamassu-server-v10.0.0-beta.0.tar.gz >> $LOG_FILE 2>&1
 hash=$(sha256sum /tmp/lamassu-server.tar.gz | awk '{print $1}' | sed 's/ *$//g')
 
