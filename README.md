@@ -9,7 +9,7 @@ Follow the latest installation instructions on [**our knowledgebase**](https://s
 On a fresh droplet using the specs outlined in the instructions above, run:
 
 ```
-curl -O https://raw.githubusercontent.com/lamassu/lamassu-install/release-8.6/install && bash install
+curl -O https://raw.githubusercontent.com/lamassu/lamassu-install/release-10/install && bash install
 ```
 
 ## Upgrading
@@ -21,5 +21,5 @@ Then, follow our [**KB instructions for upgrading**](https://support.lamassu.is/
 On servers running v8.0 or higher, you may run the following to upgrade:
 
 ```
-curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/release-8.6/upgrade-ls | bash
+curl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/release-10/upgrade-ls | bash
 ```
