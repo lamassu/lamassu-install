@@ -63,7 +63,7 @@ fi
 if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   echo -e "\033[1mDetected Ubuntu version: 20.04. Your operating system is up to date.\033[0m"
   echo
-  echo -e "\033[1mUpdating lamassu-server to v9.0.0-beta.7...\033[0m"
+  echo -e "\033[1mUpdating lamassu-server to v9.0.0-beta.8...\033[0m"
   echo
 
   # Check if ETH was transacted for the first time before 8.0
@@ -118,9 +118,9 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
       mv -v "${NODE_MODULES}/lamassu-server" "${NODE_MODULES}/${BKP_NAME}" >> ${LOG_FILE} 2>&1
   fi
 
-  decho "updating lamassu-server to v9.0.0-beta.7..."
-  sourceHash=$'0ae1cb6f757b730add9ed999e48e210e9965382507381c0f04bd23175e8c9c00'
-  curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v9.0.0-beta.7/lamassu-server-v9.0.0-beta.7.tar.gz >> $LOG_FILE 2>&1
+  decho "updating lamassu-server to v9.0.0-beta.8..."
+  sourceHash=$'d44c95f556c384699acebf8c332c9d2aef61c2edc23db5c637e1b478c3676d8d'
+  curl -sSLo /tmp/lamassu-server.tar.gz https://github.com/lamassu/lamassu-server/releases/download/v9.0.0-beta.8/lamassu-server-v9.0.0-beta.8.tar.gz >> $LOG_FILE 2>&1
   hash=$(sha256sum /tmp/lamassu-server.tar.gz | awk '{print $1}' | sed 's/ *$//g')
 
   if [ $hash != $sourceHash ] ; then
