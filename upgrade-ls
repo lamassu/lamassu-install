@@ -208,7 +208,7 @@ else
   echo -e "\033[0;31mOld Ubuntu version detected ($UBUNTU_VERSION). Make sure that Ubuntu is on either version 16.04 or 18.04 and update it.\033[0m"
   echo "To update this machine's operating system, please run the following command in this machine's terminal:"
   echo
-  echo -e "\033[1mcurl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/electric-enlil/upgrade-os | bash\033[0m"
+  echo -e "\033[1mcurl -sS https://raw.githubusercontent.com/lamassu/lamassu-install/grand-gilgamesh/upgrade-os | bash\033[0m"
   echo
 fi
 
