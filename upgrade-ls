@@ -105,6 +105,9 @@ if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
   supervisorctl stop lamassu-server >> ${LOG_FILE} 2>&1
   supervisorctl stop lamassu-admin-server >> ${LOG_FILE} 2>&1
 
+  decho "updating nodejs"
+  apt install -y nodejs >> ${LOG_FILE} 2>&1
+
   decho "unlinking old executables"
   set +e
   rm $NPM_BIN/lamassu-* >> ${LOG_FILE} 2>&1
